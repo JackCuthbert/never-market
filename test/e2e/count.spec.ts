@@ -46,6 +46,8 @@ test('filtered by the store: no count, a note, and a button that turns the filte
   await expect(popup.locator('main')).toHaveAttribute('data-state', 'filtered');
   await expect(popup.locator('#stats')).toContainText('Bunnings is filtering for you');
   await expect(popup.locator('#extra')).toBeHidden();
+  await expect(popup.locator('#enabled')).toBeVisible();
+  await expect(popup.locator('#use-store-filters')).toBeVisible();
   await popup.locator('#unfilter').click();
   await expect(popup.locator('#use-store-filters')).not.toBeChecked();
   await expect(popup.locator('#stats')).toHaveText('No listings found yet');

@@ -40,6 +40,7 @@ export function start(rule: Rule): void {
     report();
   });
   chrome.storage.onChanged.addListener((changes) => {
+    sessionStorage.removeItem(REDIRECT_KEY);
     const enabled = changes[ENABLED_KEY];
     const filters = changes[FILTERS_KEY];
     if (enabled) settings.enabled = enabled.newValue !== false;

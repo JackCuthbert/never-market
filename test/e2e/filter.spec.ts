@@ -126,3 +126,54 @@ test('bigw never navigates when store filters are turned off', async ({ context 
   expect(page.url()).toBe(url);
   expect(requested).toEqual([]);
 });
+
+test('turning store filters on adds the param to a page loaded with them off', async ({ context }) => {
+  await setToggle(context, false);
+  const page = await open(context, SEARCH);
+  await page.waitForTimeout(800);
+  expect(page.url()).toBe(SEARCH);
+  await setToggle(context, true);
+  await page.bringToFront();
+  await expect(page).toHaveURL(FILTERED);
+});
+
+test('turning the master toggle back on adds the param', async ({ context }) => {
+  await setEnabled(context, false);
+  const page = await open(context, SEARCH);
+  await page.waitForTimeout(800);
+  expect(page.url()).toBe(SEARCH);
+  await setEnabled(context, true);
+  await page.bringToFront();
+  await expect(page).toHaveURL(FILTERED);
+});
+
+test('off then on again straight away still re-adds the param', async ({ context }) => {
+  const page = await open(context, SEARCH);
+  await expect(page).toHaveURL(FILTERED);
+  await setToggle(context, false);
+  await page.bringToFront();
+  await expect(page).toHaveURL(SEARCH);
+  await setToggle(context, true);
+  await page.bringToFront();
+  await expect(page).toHaveURL(FILTERED);
+});
+
+for (const [store, url, fixture, param] of [
+  ['jbhifi', 'https://www.jbhifi.com.au/search?query=phone%20case', 'jbhifi/search.html', 'Sold%20by=JB%20Hi-Fi'],
+  [
+    'woolworths',
+    'https://www.woolworths.com.au/shop/search/products?searchTerm=xbox',
+    'woolworths/search.html',
+    'isHideEverydayMarketProducts=true',
+  ],
+] as const) {
+  test(`${store}: turning store filters on adds the param`, async ({ context }) => {
+    await setToggle(context, false);
+    const page = await openStorePage(context, { url, fixture });
+    await page.waitForTimeout(800);
+    expect(page.url()).toBe(url);
+    await setToggle(context, true);
+    await page.bringToFront();
+    await expect(page).toHaveURL(`${url}&${param}`);
+  });
+}
