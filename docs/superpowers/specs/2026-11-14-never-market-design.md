@@ -74,7 +74,7 @@ Made with the user:
 
 My calls (not yet agreed):
 
-- Plain JavaScript, no build step, unless the builder finds a reason.
+- TypeScript in strict mode. `tsconfig.base.json` extends `@tsconfig/strictest`; extension code and Node code (scripts, tests) get separate configs that extend it. esbuild bundles one content script per store (engine plus rule) and the popup; Node 26 runs the build script and unit tests as `.ts` directly. Changed by the user from "plain JavaScript, no build step".
 - A hide rule is a single CSS selector. The engine injects a stylesheet that
   sets `display: none !important` on it. There is no scanning code and no
   `MutationObserver`; the browser handles cards that load later. `display:
@@ -131,6 +131,24 @@ One file per store in `sites/<store>.json`:
   `.ProductCard:has([data-testid="marketplace-seller_callout_product-card"])`.
   Marketplace cards have a "JB Hi-Fi Marketplace: Sold and sent by …"
   callout; retailer cards have none.
+
+## Big W rule (from supplied markup)
+
+- No `urlFilter`. Big W has a marketplace filter in its menus, but it does not
+  change the URL, so the extension cannot use it. This store is card hiding
+  only; with no server filter, a page can show fewer cards than usual and the
+  page's own result count and pagination include hidden items. Driving the
+  menu filter from the extension is out of scope for v1.
+- Cards are `<li class="ProductGrid_ProductTileWrapper__LkYlE">` holding an
+  `<article data-testid="product-tile">`. The `li` looks like the layout cell
+  (unconfirmed). Class names have generated suffixes, so the rule uses none.
+- Marketplace cards contain `<div class="MarketplacePill_container__j__fT">`
+  with `<img alt="Marketplace Logo">`. Retailer cards have neither.
+- `hide`: `li:has(article[data-testid="product-tile"] img[alt="Marketplace
+  Logo"])`.
+- Not used: the `ONLINE ONLY`, `DELIVERY ONLY`, `NEW` and
+  `NOT AVAILABLE IN STORE` labels. Retailer products can carry the first
+  three.
 
 ## Woolworths rule (partly known)
 
