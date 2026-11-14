@@ -6,6 +6,7 @@
   "scripts": {
     "test:unit": "node --test \"test/unit/*.test.ts\"",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit",
+    "icons": "node scripts/icons.ts",
     "build": "node scripts/build.ts",
     "package": "npm run build && rm -f never-market.xpi && cd dist && zip -qr ../never-market.xpi .",
     "test:e2e": "npm run build && playwright test"

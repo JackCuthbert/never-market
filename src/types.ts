@@ -15,6 +15,15 @@ export type CountRequest = { type: 'count' };
 
 export type CountResponse = { store: string; hidden: number; total: number | null; filtered: boolean };
 
-export function isCountRequest(message: unknown): message is CountRequest {
-  return typeof message === 'object' && message !== null && 'type' in message && message.type === 'count';
-}
+export type StatusMessage = { type: 'status'; active: boolean };
+
+export type StatusRequest = { type: 'getStatus'; tabId: number };
+
+const hasType = (message: unknown, type: string): boolean =>
+  typeof message === 'object' && message !== null && 'type' in message && message.type === type;
+
+export const isCountRequest = (message: unknown): message is CountRequest => hasType(message, 'count');
+
+export const isStatusMessage = (message: unknown): message is StatusMessage => hasType(message, 'status');
+
+export const isStatusRequest = (message: unknown): message is StatusRequest => hasType(message, 'getStatus');

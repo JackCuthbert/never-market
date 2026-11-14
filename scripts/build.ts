@@ -50,5 +50,14 @@ if (existsSync(join(root, 'popup'))) {
   }
 }
 
+await build({
+  entryPoints: [join(root, 'src/background.ts')],
+  outfile: join(out, 'background.js'),
+  bundle: true,
+  format: 'iife',
+  target: 'chrome105',
+});
+cpSync(join(root, 'assets/icons'), join(out, 'icons'), { recursive: true });
+
 writeFileSync(join(out, 'stores.json'), JSON.stringify(stores) + '\n');
 writeFileSync(join(out, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');

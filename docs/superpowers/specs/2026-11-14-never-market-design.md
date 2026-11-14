@@ -84,7 +84,7 @@ My calls (not yet agreed):
   `MutationObserver`; the browser handles cards that load later. `display:
   none !important` is used because Bunnings' tile root has the `flex` class,
   which overrides the `hidden` attribute.
-- No background script and no toolbar badge in v1.
+- A minimal background script (`src/background.ts`) sets the toolbar icon per tab: green dot when the content script reports `{type:'status', active:true}` (store page and `enabled` on), grey dot otherwise and while a tab loads. Changed by the user from "no background script". The manifest declares both `background.service_worker` (Chrome) and `background.scripts` (Firefox 121+) for the same `background.js`. No `tabs` permission. Icons are PNG from `assets/icons/` (generated from `assets/icon.svg` by `npm run icons`, committed); the extension-list icon has no dot. No toolbar badge.
 - Two checkboxes in a toolbar popup, stored with `storage.local` under the
   `storage` permission, on by default, applying to all stores: "Hide
   marketplace listings" (`enabled`) and "Use store filters"

@@ -1,16 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 type ContentScript = { matches: string[]; run_at: string; js: string[] };
 type Manifest = {
   manifest_version: number;
+  name: string;
   permissions: string[];
   host_permissions: string[];
-  background?: unknown;
+  background: { service_worker: string; scripts: string[] };
+  icons: Record<string, string>;
+  action: { default_icon: Record<string, string> };
   browser_specific_settings: { gecko: { id: string } };
   content_scripts: ContentScript[];
 };
@@ -28,9 +31,9 @@ const hosts = {
 
 test('manifest basics', () => {
   assert.strictEqual(manifest.manifest_version, 3);
+  assert.strictEqual(manifest.name, 'Never Market');
   assert.deepStrictEqual(manifest.permissions, ['storage']);
   assert.deepStrictEqual(manifest.host_permissions, manifest.content_scripts.flatMap((c) => c.matches));
-  assert.strictEqual(manifest.background, undefined);
   assert.ok(manifest.browser_specific_settings.gecko.id);
 });
 
@@ -47,4 +50,12 @@ test('one content script entry per site', () => {
 
 test('rule script bundles the rule', () => {
   assert.match(readFileSync(join(out, 'rules/bunnings.js'), 'utf8'), /productranges/);
+});
+
+test('icons and background script are built', () => {
+  assert.deepStrictEqual(Object.keys(manifest.icons), ['16', '32', '48', '128']);
+  assert.deepStrictEqual(manifest.background, { service_worker: 'background.js', scripts: ['background.js'] });
+  const files = [...Object.values(manifest.icons), ...Object.values(manifest.action.default_icon), 'background.js'];
+  for (const size of [16, 32]) files.push(`icons/on-${size}.png`, `icons/off-${size}.png`);
+  for (const file of files) assert.ok(existsSync(join(out, file)), file);
 });

@@ -1,5 +1,5 @@
 import { isCountRequest } from './types.ts';
-import type { CountResponse, Rule, ShadowRule, UrlFilter } from './types.ts';
+import type { CountResponse, Rule, ShadowRule, StatusMessage, UrlFilter } from './types.ts';
 import { filteredUrl, hasFilterParam } from './url-filter.ts';
 
 const ENABLED_KEY = 'enabled';
@@ -14,6 +14,11 @@ export function start(rule: Rule): void {
   const scanner = rule.shadow && createShadowScanner(rule.shadow);
   const redirect = rule.urlFilter && createRedirect(rule.urlFilter, () => settings.loaded && settings.enabled && settings.useStoreFilters);
 
+  const report = (): void => {
+    const message: StatusMessage = { type: 'status', active: settings.enabled };
+    chrome.runtime.sendMessage(message).catch(() => {});
+  };
+
   const apply = (): void => {
     if (settings.enabled) document.documentElement.append(...(style ? [style] : []));
     else style?.remove();
@@ -21,12 +26,14 @@ export function start(rule: Rule): void {
     redirect?.();
   };
 
+  addEventListener('pageshow', report);
   apply();
   void chrome.storage.local.get([ENABLED_KEY, FILTERS_KEY]).then((stored) => {
     settings.loaded = true;
     settings.enabled = stored[ENABLED_KEY] !== false;
     settings.useStoreFilters = stored[FILTERS_KEY] !== false;
     apply();
+    report();
   });
   chrome.storage.onChanged.addListener((changes) => {
     const enabled = changes[ENABLED_KEY];
@@ -34,6 +41,7 @@ export function start(rule: Rule): void {
     if (enabled) settings.enabled = enabled.newValue !== false;
     if (filters) settings.useStoreFilters = filters.newValue !== false;
     apply();
+    if (enabled) report();
   });
   chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse: (response: CountResponse) => void) => {
     if (isCountRequest(message)) sendResponse(countListings(rule, settings));

@@ -10,6 +10,10 @@ npm run build
 npm run typecheck
 ```
 
+## Icons
+
+`assets/icon.svg` is the logo. `npm run icons` renders the PNGs in `assets/icons/` (needs Playwright Chromium) and previews in `test-results/logo/`. Commit the PNGs. The toolbar icon has a green dot on a store page with hiding on, and a grey dot otherwise; a small background script sets it.
+
 ## Install
 
 - Chrome: `chrome://extensions`, turn on Developer mode, "Load unpacked", choose `dist/`.
