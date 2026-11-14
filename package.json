@@ -6,9 +6,11 @@
   "scripts": {
     "test:unit": "node --test \"test/unit/*.test.ts\"",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit",
-    "build": "node scripts/build.ts"
+    "build": "node scripts/build.ts",
+    "test:e2e": "npm run build && playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "~1.64.0",
     "@tsconfig/strictest": "^2.0.9",
     "@types/chrome": "^0.3.7",
     "@types/node": "^26.6.6",
