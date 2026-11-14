@@ -1,5 +1,5 @@
 import { chromium, expect, test as base } from '@playwright/test';
-import type { BrowserContext, Page } from '@playwright/test';
+import type { Browser, BrowserContext, Page } from '@playwright/test';
 import { createHash } from 'node:crypto';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -57,4 +57,17 @@ export async function setToggle(context: BrowserContext, value: boolean): Promis
     .poll(() => page.evaluate('chrome.storage.local.get("useStoreFilters").then((s) => s.useStoreFilters)'))
     .toBe(value);
   await page.close();
+}
+
+export async function plainPage(
+  browser: Browser,
+  { url, fixture }: { url: string; fixture: string },
+): Promise<Page> {
+  const page = await browser.newPage();
+  if (!process.env['LIVE']) {
+    const html = resolve(import.meta.dirname, '../../fixtures', fixture);
+    await page.route(`${new URL(url).origin}/**`, (route) => route.fulfill({ path: html, contentType: 'text/html' }));
+  }
+  await page.goto(url);
+  return page;
 }
