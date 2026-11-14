@@ -9,5 +9,6 @@
     "value": "JB Hi-Fi"
   },
   "card": ".ProductCard",
+  "placeholder": "[data-testid=\"product-card-skeleton\"]",
   "hide": ".ProductCard:has([data-testid=\"marketplace-seller_callout_product-card\"])"
 }

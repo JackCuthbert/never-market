@@ -12,6 +12,7 @@ One file per store: `sites/<store>.json`, typed as `Rule` in `src/types.ts`. The
 | `hide` | one mode | CSS selector for marketplace cells. See [hiding.md](hiding.md). |
 | `shadow` | one mode | `{ card, host, marketplace }` for stores that render cards in a shadow root. Uses `shadow.card` instead of `card`. |
 | `keep` | one mode | `{ badge, text }`. Hide every card except those whose seller badge is exactly `text`. Needs `card`. |
+| `placeholder` | no | CSS selector for loading placeholders (skeleton cards). Hidden with the listings, never counted. |
 | `urlFilter` | no | `{ pathPrefix, param, value }`. See [store-filters.md](store-filters.md). `pathPrefix` is a string or a list. |
 | `note` | no | Short warning the popup shows on that store's pages. |
 
@@ -28,3 +29,7 @@ A `hide` selector is the `card` selector plus a `:has(...)` for the marketplace 
 - Use stable hooks: `data-testid`, `aria-label`, `alt`, element names. Never use class names with generated suffixes.
 - The signal must appear on marketplace cards only.
 - Each store's selector is chosen and checked for that store alone. There is no shared default.
+
+## Placeholders
+
+A store can show skeleton cards while results load. They reserve the page's full height. If every real listing is then hidden, the page collapses and the browser clamps the scroll position, which looks like a forced scroll back up. A `placeholder` selector hides the skeletons whenever hiding is on, so the page height never includes them.

@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, openStorePage, test } from './harness.ts';
+import { expect, openPopupOver, openStorePage, setToggle, test } from './harness.ts';
 
 const BUNNINGS = 'https://www.bunnings.com.au/search/products?page=1&q=cable+management&productranges=!Marketplace';
 const JBHIFI = 'https://www.jbhifi.com.au/search?query=phone%20case&Sold%20by=JB%20Hi-Fi';
@@ -51,4 +51,18 @@ test('empty results page does not throw', async ({ context }) => {
   page.on('pageerror', (e) => errors.push(e.message));
   await page.waitForTimeout(500);
   expect(errors).toEqual([]);
+});
+
+test('jbhifi: loading placeholders are hidden and not counted', async ({ context }) => {
+  await setToggle(context, false);
+  const page = await openStorePage(context, { url: JBHIFI, fixture: 'jbhifi/search.html' });
+  await page.evaluate(() => {
+    const skeleton = document.createElement('div');
+    skeleton.dataset['testid'] = 'product-card-skeleton';
+    skeleton.textContent = 'loading';
+    document.querySelector('#grid')?.append(skeleton);
+  });
+  await expect(page.locator('[data-testid="product-card-skeleton"]')).toBeHidden();
+  const popup = await openPopupOver(context, page);
+  await expect(popup.locator('#stats')).toHaveText('2 of 4 listings hidden');
 });

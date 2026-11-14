@@ -79,7 +79,7 @@ const KEEP_ATTRIBUTE = 'data-never-market-keep';
 const notKept = (card: string): string => `:is(${card}):not([${KEEP_ATTRIBUTE}])`;
 
 function createStyle(rule: Rule): HTMLStyleElement | undefined {
-  const hidden = [rule.hide, rule.shadow && '[data-never-market]', rule.keep && rule.card && notKept(rule.card)]
+  const hidden = [rule.hide, rule.placeholder, rule.shadow && '[data-never-market]', rule.keep && rule.card && notKept(rule.card)]
     .filter(Boolean)
     .join(',');
   if (!hidden) return undefined;

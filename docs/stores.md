@@ -14,6 +14,7 @@ What marks a marketplace listing on each store, taken from supplied markup. When
 
 - URL filter: `Sold by=JB Hi-Fi` on paths starting `/search`. Less reliable than Bunnings'.
 - Signal: `[data-testid="marketplace-seller_callout_product-card"]` inside `.ProductCard`. The callout reads "JB Hi-Fi Marketplace: Sold and sent by ...".
+- Placeholder: `[data-testid="product-card-skeleton"]`. Results can take 20 seconds to arrive and the skeletons make the page about 7100 px tall. On a page where every listing is hidden (for example `Sold by=<marketplace seller>`) it collapsed to about 1200 px and the scroll jumped back.
 - Not used: the "Online Only" tag. It also marks JB's own online-only products.
 
 ## Woolworths

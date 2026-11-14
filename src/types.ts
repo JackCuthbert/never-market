@@ -10,6 +10,7 @@ export type Rule = {
   urlFilter?: UrlFilter;
   card?: string;
   hide?: string;
+  placeholder?: string;
   shadow?: ShadowRule;
   keep?: KeepRule;
   note?: string;
