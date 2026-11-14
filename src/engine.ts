@@ -1,4 +1,8 @@
 import type { Rule, ShadowRule } from './types.ts';
+import { filteredUrl } from './url-filter.ts';
+
+const TOGGLE_KEY = 'useStoreFilters';
+const REDIRECT_KEY = 'never-market-redirect';
 
 export function start(rule: Rule): void {
   const hidden = [rule.hide, rule.shadow && '[data-never-market]'].filter(Boolean).join(',');
@@ -8,6 +12,32 @@ export function start(rule: Rule): void {
     document.documentElement.append(style);
   }
   if (rule.shadow) startShadowScan(rule.shadow);
+  if (rule.urlFilter) startUrlFilter(rule.urlFilter);
+}
+
+function startUrlFilter(filter: NonNullable<Rule['urlFilter']>): void {
+  let enabled = false;
+  const redirect = (): void => {
+    if (!enabled) return;
+    const target = filteredUrl(filter, location.href);
+    if (!target) return;
+    const last = sessionStorage.getItem(REDIRECT_KEY);
+    if (last && last.startsWith(`${target}|`) && Date.now() - Number(last.slice(target.length + 1)) < 5000) return;
+    sessionStorage.setItem(REDIRECT_KEY, `${target}|${Date.now()}`);
+    location.replace(target);
+  };
+
+  void chrome.storage.local.get(TOGGLE_KEY).then((stored) => {
+    enabled = stored[TOGGLE_KEY] !== false;
+    redirect();
+  });
+  chrome.storage.onChanged.addListener((changes) => {
+    const change = changes[TOGGLE_KEY];
+    if (change) enabled = change.newValue !== false;
+    redirect();
+  });
+  // shortcut: polling, replace with webNavigation if 500 ms lag is not acceptable
+  setInterval(redirect, 500);
 }
 
 function startShadowScan({ card, host, marketplace }: ShadowRule): void {

@@ -1,5 +1,6 @@
 import { chromium, expect, test as base } from '@playwright/test';
 import type { BrowserContext, Page } from '@playwright/test';
+import { createHash } from 'node:crypto';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -35,4 +36,25 @@ export async function openStorePage(
   }
   await page.goto(url);
   return page;
+}
+
+// Chrome derives an unpacked extension's id from the sha256 of its path.
+function extensionId(): string {
+  const hex = createHash('sha256').update(dist).digest('hex').slice(0, 32);
+  return [...hex].map((c) => String.fromCharCode(97 + parseInt(c, 16))).join('');
+}
+
+export async function openPopup(context: BrowserContext): Promise<Page> {
+  const page = await context.newPage();
+  await page.goto(`chrome-extension://${extensionId()}/popup/popup.html`);
+  return page;
+}
+
+export async function setToggle(context: BrowserContext, value: boolean): Promise<void> {
+  const page = await openPopup(context);
+  await page.locator('#use-store-filters').setChecked(value);
+  await expect
+    .poll(() => page.evaluate('chrome.storage.local.get("useStoreFilters").then((s) => s.useStoreFilters)'))
+    .toBe(value);
+  await page.close();
 }
