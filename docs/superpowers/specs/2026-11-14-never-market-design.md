@@ -102,7 +102,8 @@ One file per store in `sites/<store>.json`:
 - `card`: selector for the listing's layout cell (the `hide` selector
   without its `:has(...)` part). The popup counts it for "N of M listings".
   Shadow rules use `shadow.card` instead.
-- `urlFilter` (optional): `{ pathPrefix, param, value }`. On a matching path,
+- `urlFilter` (optional): `{ pathPrefix, param, value }`; `pathPrefix` is a
+  string or a list of strings. On a path that starts with any prefix,
   if the param is missing, replace the URL with the param added and the other
   parameters kept.
 - `hide`: a CSS selector for the marketplace cards. It must match the
@@ -127,13 +128,28 @@ One file per store in `sites/<store>.json`:
 
 ## Bunnings rule (from supplied markup)
 
-- `urlFilter`: path prefix `/search/products`, param `productranges`, value
-  `!Marketplace`.
-- `hide`: `[data-search-product-tile]:has(a[aria-label*="Marketplace"])`.
-  `data-search-product-tile` is a testing hook. The tile link's `aria-label`
-  contains `Availability: Marketplace | Online only` on marketplace tiles
-  only.
-- Not used: the `text-identity-marketplace` class, which is styling.
+- `urlFilter`: path prefixes `/search/products` and `/products/` (category
+  listing pages, e.g. `/products/assisted-living/bathroom-safety`), param
+  `productranges`, value `!Marketplace`. Product detail pages
+  (`/<slug>_p<digits>`) and `/` do not match. Not verified: whether the bare
+  landing page `/products/assisted-living` honours the param.
+- `hide`: `[data-search-product-tile]:has(a[aria-label*="Availability: Marketplace"]), .embla-slide:has(a[aria-label*="Availability: Marketplace"])`.
+  The first part covers search tiles (`data-search-product-tile` is a testing
+  hook). The second covers category and landing pages such as
+  `/products/assisted-living`, which render products in an Embla carousel; the
+  layout cell is the `.embla-slide`, a direct child of `.embla-track`. In both,
+  the tile link's `aria-label` contains `Availability: Marketplace | Online
+  only` on marketplace tiles only, so a retailer product named "Marketplace
+  ..." stays visible.
+- `card`: `[data-search-product-tile], .embla-slide:has(a[aria-label*="Availability:"])`.
+  A retailer slide whose label has no `Availability:` text is not counted in
+  the popup's total (no retailer slide was supplied).
+- The carousel rule is the fallback when the filter is off, and removes the
+  cards on any landing page that ignores the param.
+- Known limits of hiding carousel slides: Embla measured the slides before they
+  were hidden, so its scroll position, arrows and dots can be out of sync; and
+  a carousel whose slides are all marketplace leaves an empty section with its
+  heading still showing.- Not used: the `text-identity-marketplace` class, which is styling.
 
 ## JB Hi-Fi rule (from supplied markup)
 

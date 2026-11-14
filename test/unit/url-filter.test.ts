@@ -54,3 +54,16 @@ test('hasFilterParam is true only on a matching path that carries the param', ()
   assert.strictEqual(hasFilterParam(bunnings, `${base}/search/products?q=a`), false);
   assert.strictEqual(hasFilterParam(bunnings, `${base}/p/1?productranges=!Marketplace`), false);
 });
+
+test('a pathPrefix list matches any prefix', () => {
+  const filter = { pathPrefix: ['/search/products', '/products/'], param: 'productranges', value: '!Marketplace' };
+  assert.strictEqual(
+    filteredUrl(filter, `${base}/products/assisted-living/bathroom-safety?page=1#top`),
+    `${base}/products/assisted-living/bathroom-safety?page=1&productranges=!Marketplace#top`,
+  );
+  assert.strictEqual(filteredUrl(filter, `${base}/search/products?q=a`), `${base}/search/products?q=a&productranges=!Marketplace`);
+  assert.strictEqual(filteredUrl(filter, `${base}/products/x?productranges=Other`), null);
+  assert.strictEqual(filteredUrl(filter, `${base}/walking-frame_p0123456`), null);
+  assert.strictEqual(filteredUrl(filter, `${base}/`), null);
+  assert.strictEqual(hasFilterParam(filter, `${base}/products/x?productranges=!Marketplace`), true);
+});

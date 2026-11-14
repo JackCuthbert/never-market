@@ -1,8 +1,11 @@
 import type { UrlFilter } from './types.ts';
 
+const matchesPath = (filter: UrlFilter, pathname: string): boolean =>
+  [filter.pathPrefix].flat().some((prefix) => pathname.startsWith(prefix));
+
 export function filteredUrl(filter: UrlFilter, href: string): string | null {
   const url = new URL(href);
-  if (!url.pathname.startsWith(filter.pathPrefix)) return null;
+  if (!matchesPath(filter, url.pathname)) return null;
   if (url.searchParams.has(filter.param)) return null;
   const pair = `${encodeURIComponent(filter.param)}=${encodeURIComponent(filter.value)}`;
   const search = url.search ? `${url.search}&${pair}` : `?${pair}`;
@@ -11,5 +14,5 @@ export function filteredUrl(filter: UrlFilter, href: string): string | null {
 
 export function hasFilterParam(filter: UrlFilter, href: string): boolean {
   const url = new URL(href);
-  return url.pathname.startsWith(filter.pathPrefix) && url.searchParams.has(filter.param);
+  return matchesPath(filter, url.pathname) && url.searchParams.has(filter.param);
 }

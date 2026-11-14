@@ -1,4 +1,4 @@
-export type UrlFilter = { pathPrefix: string; param: string; value: string };
+export type UrlFilter = { pathPrefix: string | string[]; param: string; value: string };
 
 export type ShadowRule = { card: string; host: string; marketplace: string };
 

@@ -4,10 +4,13 @@
     "www.bunnings.com.au"
   ],
   "urlFilter": {
-    "pathPrefix": "/search/products",
+    "pathPrefix": [
+      "/search/products",
+      "/products/"
+    ],
     "param": "productranges",
     "value": "!Marketplace"
   },
-  "card": "[data-search-product-tile]",
-  "hide": "[data-search-product-tile]:has(a[aria-label*=\"Availability: Marketplace\"])"
+  "card": "[data-search-product-tile], .embla-slide:has(a[aria-label*=\"Availability:\"])",
+  "hide": "[data-search-product-tile]:has(a[aria-label*=\"Availability: Marketplace\"]), .embla-slide:has(a[aria-label*=\"Availability: Marketplace\"])"
 }
