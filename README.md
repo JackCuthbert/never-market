@@ -16,6 +16,8 @@ npm run typecheck
 
 ## Install
 
+Releases are on GitHub. Each release has `never-market-firefox-<tag>.xpi` and `never-market-chrome-<tag>.zip`. The Chrome zip is the contents of `dist/`: unzip it and use "Load unpacked". The Firefox `.xpi` is unsigned, so Firefox installs it only as a temporary add-on (`about:debugging`) or in Developer Edition, Nightly and ESR with `xpinstall.signatures.required` set to `false`.
+
 - Chrome: `chrome://extensions`, turn on Developer mode, "Load unpacked", choose `dist/`.
 - Firefox: run `npm run build`, open `about:debugging`, "This Firefox", "Load Temporary Add-on", choose `dist/manifest.json`. Optional: `web-ext run -s dist`.
 - Firefox in a Flatpak or Snap sandbox (for example Zen): the file picker exposes only `manifest.json`, so loading `dist/` fails. Run `npm run package`, then load `never-market.xpi` with "Load Temporary Add-on". Load it again after every rebuild.
@@ -60,3 +62,7 @@ Firefox is not automated. After loading the extension:
 1. Add `sites/<store>.json`.
 2. Add a fixture in `fixtures/<store>/`.
 3. Run `npm run build`.
+
+## Releases
+
+release-please runs in `.github/workflows/release.yml` on GitHub, after the Forgejo push mirror delivers `main`. Commits must follow Conventional Commits. The workflow runs the checks, then opens or updates a release PR that bumps `package.json` and `manifest.base.json` and writes `CHANGELOG.md`. Merging that PR tags the release and attaches the Firefox and Chrome packages. Forgejo runs only `.forgejo/workflows/ci.yml`.

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Never Market",
   "version": "0.1.0",
-  "description": "Hides marketplace listings on Bunnings, JB Hi-Fi, Woolworths and Big W.",
+  "description": "Hides third-party marketplace listings on Big W, Bunnings, JB Hi-Fi, Kmart and Woolworths.",
   "permissions": ["storage"],
   "icons": {
     "16": "icons/icon-16.png",
