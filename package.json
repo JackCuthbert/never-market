@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "test:unit": "node --test \"test/unit/*.test.ts\"",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit",
+    "build": "node scripts/build.ts"
   },
   "devDependencies": {
     "@tsconfig/strictest": "^2.0.9",
     "@types/chrome": "^0.3.7",
     "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
     "typescript": "^7.0.2"
   }
 }

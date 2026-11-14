@@ -1,0 +1,4 @@
+{
+  "hosts": ["www.bigw.com.au"],
+  "hide": "li:has(article[data-testid=\"product-tile\"] img[alt=\"Marketplace Logo\"])"
+}

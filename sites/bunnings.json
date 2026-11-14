@@ -1,0 +1,5 @@
+{
+  "hosts": ["www.bunnings.com.au"],
+  "urlFilter": { "pathPrefix": "/search/products", "param": "productranges", "value": "!Marketplace" },
+  "hide": "[data-search-product-tile]:has(a[aria-label*=\"Availability: Marketplace\"])"
+}

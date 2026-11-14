@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "never-market",
+  "version": "0.1.0",
+  "description": "Hides marketplace listings on Bunnings, JB Hi-Fi, Woolworths and Big W.",
+  "permissions": ["storage"],
+  "action": { "default_popup": "popup/popup.html" },
+  "minimum_chrome_version": "105",
+  "browser_specific_settings": {
+    "gecko": { "id": "never-market@jckcthbrt.io", "strict_min_version": "121.0" }
+  }
+}

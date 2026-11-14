@@ -1,0 +1,5 @@
+{
+  "hosts": ["www.woolworths.com.au"],
+  "urlFilter": { "pathPrefix": "/shop/search/products", "param": "isHideEverydayMarketProducts", "value": "true" },
+  "shadow": { "card": ".product-grid-v2--tile", "host": "wc-product-tile", "marketplace": ".market-product-message-wrapper" }
+}
