@@ -9,6 +9,7 @@ type ContentScript = { matches: string[]; run_at: string; js: string[] };
 type Manifest = {
   manifest_version: number;
   permissions: string[];
+  host_permissions: string[];
   background?: unknown;
   browser_specific_settings: { gecko: { id: string } };
   content_scripts: ContentScript[];
@@ -28,6 +29,7 @@ const hosts = {
 test('manifest basics', () => {
   assert.strictEqual(manifest.manifest_version, 3);
   assert.deepStrictEqual(manifest.permissions, ['storage']);
+  assert.deepStrictEqual(manifest.host_permissions, manifest.content_scripts.flatMap((c) => c.matches));
   assert.strictEqual(manifest.background, undefined);
   assert.ok(manifest.browser_specific_settings.gecko.id);
 });

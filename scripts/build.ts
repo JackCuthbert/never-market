@@ -32,6 +32,7 @@ for (const file of readdirSync(join(root, 'sites')).filter((f) => f.endsWith('.j
   });
 }
 manifest['content_scripts'] = contentScripts;
+manifest['host_permissions'] = contentScripts.flatMap((c) => c.matches);
 
 if (existsSync(join(root, 'popup'))) {
   mkdirSync(join(out, 'popup'), { recursive: true });
