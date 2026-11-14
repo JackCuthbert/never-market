@@ -50,14 +50,26 @@ export async function openPopup(context: BrowserContext): Promise<Page> {
   return page;
 }
 
-export async function setToggle(context: BrowserContext, value: boolean): Promise<void> {
+// Opens the popup page in the background so the active tab stays `target`, as in a real popup.
+export async function openPopupOver(context: BrowserContext, target: Page): Promise<Page> {
+  const popup = await context.newPage();
+  await target.bringToFront();
+  await popup.goto(`chrome-extension://${extensionId()}/popup/popup.html`);
+  return popup;
+}
+
+async function setCheckbox(context: BrowserContext, id: string, key: string, value: boolean): Promise<void> {
   const page = await openPopup(context);
-  await page.locator('#use-store-filters').setChecked(value);
-  await expect
-    .poll(() => page.evaluate('chrome.storage.local.get("useStoreFilters").then((s) => s.useStoreFilters)'))
-    .toBe(value);
+  await page.locator(id).setChecked(value);
+  await expect.poll(() => page.evaluate(`chrome.storage.local.get("${key}").then((s) => s.${key})`)).toBe(value);
   await page.close();
 }
+
+export const setToggle = (context: BrowserContext, value: boolean): Promise<void> =>
+  setCheckbox(context, '#use-store-filters', 'useStoreFilters', value);
+
+export const setEnabled = (context: BrowserContext, value: boolean): Promise<void> =>
+  setCheckbox(context, '#enabled', 'enabled', value);
 
 export async function plainPage(
   browser: Browser,

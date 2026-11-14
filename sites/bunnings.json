@@ -1,5 +1,13 @@
 {
-  "hosts": ["www.bunnings.com.au"],
-  "urlFilter": { "pathPrefix": "/search/products", "param": "productranges", "value": "!Marketplace" },
+  "name": "Bunnings",
+  "hosts": [
+    "www.bunnings.com.au"
+  ],
+  "urlFilter": {
+    "pathPrefix": "/search/products",
+    "param": "productranges",
+    "value": "!Marketplace"
+  },
+  "card": "[data-search-product-tile]",
   "hide": "[data-search-product-tile]:has(a[aria-label*=\"Availability: Marketplace\"])"
 }

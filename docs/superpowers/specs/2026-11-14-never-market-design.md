@@ -18,9 +18,8 @@ retailer itself sells.
 
 ## Non-goals (v1)
 
-- A toolbar badge or hidden-item count.
-- Any setting other than the one URL filter toggle. No per-site toggle; the
-  user can disable the extension.
+- A toolbar badge.
+- Any setting other than the two popup toggles. No per-site toggle.
 - Remote rule updates. Rules are bundled with the extension.
 - A code escape hatch in rules. Add one when a store needs it.
 - Woolworths, until its markup is supplied.
@@ -67,7 +66,12 @@ Made with the user:
 
 - Approach A.
 - No visible trace on the page.
-- A per-page count is not important.
+- The popup shows how many listings are hidden on the current page. Counts
+  need the store filter off (or a store with no `urlFilter`): with the filter
+  active the popup says the store filtered the page, shows no count, offers a
+  button that turns "Use store filters" off, and shows "N more hidden by the
+  extension" if cards slipped through. The page
+  itself shows no count and no trace.
 - Bunnings and JB Hi-Fi first, each with a URL filter and a card rule.
 - A toggle turns off the URL filter. With it off, the extension never changes
   the URL and only hides cards with CSS.
@@ -81,15 +85,23 @@ My calls (not yet agreed):
   none !important` is used because Bunnings' tile root has the `flex` class,
   which overrides the `hidden` attribute.
 - No background script and no toolbar badge in v1.
-- The toggle is one checkbox in a toolbar popup ("Use store filters"), stored
-  with `storage.local` under the `storage` permission. It is on by default and
-  applies to all stores.
+- Two checkboxes in a toolbar popup, stored with `storage.local` under the
+  `storage` permission, on by default, applying to all stores: "Hide
+  marketplace listings" (`enabled`) and "Use store filters"
+  (`useStoreFilters`). `enabled` off removes the stylesheet, clears
+  `data-never-market`, stops scanning and blocks any URL change, whatever
+  `useStoreFilters` says; turning it on again applies live. This lets the user
+  compare a page with and without hiding.
 
 ## Rule format
 
 One file per store in `sites/<store>.json`:
 
+- `name`: the store name shown in the popup.
 - `hosts`: hostnames the rule applies to.
+- `card`: selector for the listing's layout cell (the `hide` selector
+  without its `:has(...)` part). The popup counts it for "N of M listings".
+  Shadow rules use `shadow.card` instead.
 - `urlFilter` (optional): `{ pathPrefix, param, value }`. On a matching path,
   if the param is missing, replace the URL with the param added and the other
   parameters kept.
@@ -183,10 +195,18 @@ One file per store in `sites/<store>.json`:
 ## Engine behaviour
 
 - A content script runs at `document_start` on the hosts in the rule files.
-- If the toggle is on, the rule has a `urlFilter`, and the URL matches its
-  path but lacks the param, the script replaces the URL. If the toggle is off,
+- If `enabled` and `useStoreFilters` are on, the rule has a `urlFilter`, and the URL matches its
+  path but lacks the param, the script replaces the URL. If either is off,
   it never changes the URL.
-- It reads the toggle from `storage.local` and reacts when it changes.
+- It answers a `{ type: 'count' }` message from the popup with
+  `{ store, hidden, total, filtered }`: `filtered` is true when the rule has a
+  `urlFilter`, both settings are on and the URL carries the filter param (the
+  store already removed marketplace listings, so there is nothing to count);
+  `hidden` is `document.querySelectorAll` of
+  `hide` (or of `[data-never-market]`), 0 when `enabled` is off; `total` is
+  the count of `card`/`shadow.card`. The count is computed on
+  demand; nothing is stored and the page DOM is not changed.
+- It reads both settings from `storage.local` and reacts when they change.
 - It re-runs the URL filter check on every in-app navigation, not only on page
   load. A content script cannot see the page's own `history.pushState` calls,
   so the builder picks how to detect navigation (see below).

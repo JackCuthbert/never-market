@@ -16,12 +16,12 @@
 - `npm run typecheck` (`tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit`) passes at every commit.
 - Use the `chrome.*` API with promises (works in Chrome and Firefox MV3). No `browser ?? chrome` shim.
 - Manifest V3. Firefox: `browser_specific_settings.gecko.id` set; minimum Firefox 121, Chrome 105 (CSS `:has()`).
-- No background script, toolbar badge or hidden-item count.
+- No background script or toolbar badge. The popup shows the hidden count for the active tab (`{type:'count'}` message answered by the content script, computed on demand); the page itself shows no trace.
 - Hide with `display: none !important`. Never remove nodes, never use the `hidden` attribute.
 - A `hide` selector (or `shadow.card`) matches the list's layout cell. No shared default selector.
 - JB Hi-Fi's "Online Only" tag and Big W's `ONLINE ONLY` / `DELIVERY ONLY` labels are never signals.
 - A store without `urlFilter` (Big W) is never redirected.
-- The only setting is the toggle "Use store filters": `storage.local` key `useStoreFilters`, default on, all stores. Off means no URL changes; card hiding still runs.
+- The only settings are two popup toggles, `storage.local`, default on (missing key means on), all stores, applied live via `storage.onChanged`. "Hide marketplace listings" (`enabled`): off means nothing is hidden (stylesheet removed, `data-never-market` cleared, scan stopped) and no URL redirect. "Use store filters" (`useStoreFilters`): off means no URL changes; card hiding still runs.
 - Content scripts run at `document_start`. The stylesheet goes into `document.documentElement` (no `<head>` yet).
 - Rules are bundled. No remote fetching, no code in rules.
 - Chrome automation only. Firefox is manual (README).
@@ -42,13 +42,13 @@
 - `src/url-filter.ts`: pure URL logic.
 - `src/engine.ts`: DOM work, `NeverMarket.start(rule)`.
 - `src/types.ts`: the `Rule` and `UrlFilter` types.
-- `popup/popup.html`, `popup/popup.ts`: the toggle (bundled to `dist/popup/popup.js`).
+- `popup/popup.html`, `popup/popup.ts`: the toggles (bundled to `dist/popup/popup.js`).
 - `tsconfig.base.json`, `tsconfig.json`, `tsconfig.node.json`.
 - `fixtures/<store>/*.html`: synthetic pages from the supplied markup.
 - `test/unit/`, `test/e2e/`: tests. `README.md`: build, install, runbook.
 
 Rule shape (used by every task), exported from `src/types.ts`:
-`Rule = { hosts: string[], urlFilter?: { pathPrefix: string, param: string, value: string }, hide?: string, shadow?: { card: string, host: string, marketplace: string } }`
+`Rule = { name: string, card?: string, hosts: string[], urlFilter?: { pathPrefix: string, param: string, value: string }, hide?: string, shadow?: { card: string, host: string, marketplace: string } }`
 
 ---
 
@@ -152,8 +152,8 @@ Rule shape (used by every task), exported from `src/types.ts`:
 
 **Interfaces:**
 - Consumes: `filteredUrl` (Task 1), `start`.
-- Produces: `start` reads `useStoreFilters` from `storage.local` (`chrome.storage.local`; missing key means `true`), listens to `storage.onChanged`, and on every 500 ms tick compares `location.href`; when the toggle is on and `filteredUrl(rule.urlFilter, location.href)` is non-null it calls `location.replace(newUrl)`. Popup: one checkbox `#use-store-filters` labelled "Use store filters" that reads and writes the key.
-- Produces: `harness.ts` also exports `setToggle(context, boolean)`, which writes the key through the popup page (`chrome-extension://<id>/popup/popup.html`).
+- Produces: `start` reads `useStoreFilters` from `storage.local` (`chrome.storage.local`; missing key means `true`), listens to `storage.onChanged`, and on every 500 ms tick compares `location.href`; when the toggle is on and `filteredUrl(rule.urlFilter, location.href)` is non-null it calls `location.replace(newUrl)`. Popup: checkboxes `#enabled` ("Hide marketplace listings") and `#use-store-filters` ("Use store filters") that read and write their keys. `enabled` off blocks the redirect and hiding; it is covered by `test/e2e/enabled.spec.ts`.
+- Produces: `harness.ts` also exports `setToggle(context, boolean)` and `setEnabled(context, boolean)`, which write the keys through the popup page (`chrome-extension://<id>/popup/popup.html`).
 
 - [ ] **Step 1: Write failing tests** in `filter.spec.ts`, using the Bunnings fixture routed for any URL on the origin and recording requested URLs:
   - `search URL without the param is redirected, other params kept`: ends at `...&productranges=!Marketplace` with `page=1&q=cable+management&sort=BoostOrder` intact.

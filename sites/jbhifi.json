@@ -1,5 +1,13 @@
 {
-  "hosts": ["www.jbhifi.com.au"],
-  "urlFilter": { "pathPrefix": "/search", "param": "Sold by", "value": "JB Hi-Fi" },
+  "name": "JB Hi-Fi",
+  "hosts": [
+    "www.jbhifi.com.au"
+  ],
+  "urlFilter": {
+    "pathPrefix": "/search",
+    "param": "Sold by",
+    "value": "JB Hi-Fi"
+  },
+  "card": ".ProductCard",
   "hide": ".ProductCard:has([data-testid=\"marketplace-seller_callout_product-card\"])"
 }

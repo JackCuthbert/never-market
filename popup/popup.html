@@ -1,7 +1,132 @@
 <!doctype html>
-<html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>never-market</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --surface: #f3f5f7;
+        --border: #d9dee4;
+        --text: #15191e;
+        --muted: #54606d;
+        --accent: #0b6e4f;
+        --track: #8a95a1;
+        --thumb: #ffffff;
+        --focus: #1a5fd0;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #16191e;
+          --surface: #20252c;
+          --border: #343b45;
+          --text: #f1f3f5;
+          --muted: #a7b0bb;
+          --accent: #4fd9a0;
+          --track: #6c7785;
+          --thumb: #16191e;
+          --focus: #7fb0ff;
+        }
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--bg); }
+      body:not([data-ready]) main { visibility: hidden; }
+      main {
+        width: 320px;
+        padding: 16px;
+        color: var(--text);
+        background: var(--bg);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      .store { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+      .hero { display: flex; align-items: baseline; gap: 8px; margin: 4px 0 2px; }
+      #count { font-size: 56px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; color: var(--accent); }
+      #count-label { color: var(--muted); font-size: 14px; }
+      #stats { margin: 6px 0 12px; color: var(--muted); min-height: 1.4em; }
+      main[data-state='off'] #count, main[data-state='unsupported'] #count { color: var(--muted); }
+      main[data-state='off'] #stats { opacity: 0.7; }
+      #supported { margin: 0 0 12px; padding: 12px; background: var(--surface); border-radius: 10px; }
+      #supported h2 { margin: 0 0 8px; font-size: 12px; color: var(--muted); font-weight: 600; }
+      #store-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+      #store-list li { padding: 3px 10px; border: 1px solid var(--border); border-radius: 999px; background: var(--bg); }
+      main:not([data-state='unsupported']) #supported { display: none; }
+      .settings { border-top: 1px solid var(--border); }
+      .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+      .row:last-child { border-bottom: 0; padding-bottom: 0; }
+      .title { display: block; font-weight: 600; }
+      .desc { display: block; color: var(--muted); font-size: 12px; }
+      #unfilter { margin: 0 0 12px; padding: 6px 12px; font: inherit; font-weight: 600; color: var(--accent); background: none; border: 1px solid var(--accent); border-radius: 8px; cursor: pointer; }
+      #unfilter:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+      #extra { margin: 0 0 12px; font-weight: 600; }
+      main:not([data-state='filtered']) #unfilter { display: none; }
+      main[data-state='filtered'] #count { font-size: 36px; color: var(--muted); }
+      main[data-state='off'] #filters-row { opacity: 0.7; }
+      input[role='switch'] {
+        appearance: none;
+        flex: none;
+        position: relative;
+        width: 40px;
+        height: 24px;
+        margin: 0;
+        border-radius: 999px;
+        background: var(--track);
+        cursor: pointer;
+        transition: background-color 0.15s;
+      }
+      input[role='switch']::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--thumb);
+        transition: transform 0.15s;
+      }
+      input[role='switch']:checked { background: var(--accent); }
+      input[role='switch']:checked::after { transform: translateX(16px); }
+      input[role='switch']:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+      @media (prefers-reduced-motion: reduce) {
+        input[role='switch'], input[role='switch']::after { transition: none; }
+      }
+    </style>
+  </head>
   <body>
-    <label><input type="checkbox" id="use-store-filters" /> Use store filters</label>
+    <main data-state="unsupported">
+      <p class="store" id="store">Not a supported store page</p>
+      <div class="hero" aria-live="polite">
+        <output id="count" for="enabled">–</output>
+        <span id="count-label"></span>
+      </div>
+      <p id="stats"></p>
+      <button type="button" id="unfilter">Turn off store filters</button>
+      <p id="extra" hidden></p>
+      <section id="supported">
+        <h2>Supported stores</h2>
+        <ul id="store-list"></ul>
+      </section>
+      <section class="settings">
+        <label class="row" for="enabled">
+          <span>
+            <span class="title">Hide marketplace listings</span>
+            <span class="desc" id="enabled-desc">Turn off to see every listing and compare the page.</span>
+          </span>
+          <input type="checkbox" role="switch" id="enabled" aria-describedby="enabled-desc" />
+        </label>
+        <label class="row" for="use-store-filters" id="filters-row">
+          <span>
+            <span class="title">Use store filters</span>
+            <span class="desc" id="filters-desc">Ask the store for retailer-only results. Hiding still works when off.</span>
+          </span>
+          <input type="checkbox" role="switch" id="use-store-filters" aria-describedby="filters-desc" />
+        </label>
+      </section>
+    </main>
     <script src="popup.js"></script>
   </body>
 </html>

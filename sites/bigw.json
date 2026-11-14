@@ -1,4 +1,8 @@
 {
-  "hosts": ["www.bigw.com.au"],
+  "name": "Big W",
+  "hosts": [
+    "www.bigw.com.au"
+  ],
+  "card": "li:has(article[data-testid=\"product-tile\"])",
   "hide": "li:has(article[data-testid=\"product-tile\"] img[alt=\"Marketplace Logo\"])"
 }

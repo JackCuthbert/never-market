@@ -41,10 +41,15 @@ Opens Chromium with no extension, records a HAR, and saves `fixtures/<store>/<na
 
 Firefox is not automated. After loading the extension:
 
+- The "Hide marketplace listings" toggle shows every listing when off and hides marketplace listings again when on, without a reload; with it off the URL is never changed.
 - The "Use store filters" toggle works on and off.
-- Marketplace cards are gone.
+- Marketplace cards are gone, and the popup shows how many are hidden on the page. Counts need "Use store filters" off (or Big W): with the store filter active the popup says "Filtered by <store>" instead. The popup shows "Off" with the master toggle off and "Not a supported store page" elsewhere.
 - The layout has no gaps.
 - The URL filter is applied on each store (with the toggle on).
+
+## Rule format
+
+`sites/<store>.json`: `name` (shown in the popup), `hosts`, optional `urlFilter` (`pathPrefix`, `param`, `value`), `card` (the listing's layout cell, used for the popup's total), and either `hide` (CSS selector for marketplace cells) or `shadow` (`card`, `host`, `marketplace`) for shadow-DOM stores.
 
 ## Add a store
 

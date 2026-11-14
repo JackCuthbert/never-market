@@ -1,48 +1,84 @@
-import type { Rule, ShadowRule } from './types.ts';
-import { filteredUrl } from './url-filter.ts';
+import { isCountRequest } from './types.ts';
+import type { CountResponse, Rule, ShadowRule, UrlFilter } from './types.ts';
+import { filteredUrl, hasFilterParam } from './url-filter.ts';
 
-const TOGGLE_KEY = 'useStoreFilters';
+const ENABLED_KEY = 'enabled';
+const FILTERS_KEY = 'useStoreFilters';
 const REDIRECT_KEY = 'never-market-redirect';
 
+type Settings = { enabled: boolean; useStoreFilters: boolean };
+
 export function start(rule: Rule): void {
-  const hidden = [rule.hide, rule.shadow && '[data-never-market]'].filter(Boolean).join(',');
-  if (hidden) {
-    const style = document.createElement('style');
-    style.textContent = `${hidden}{display:none!important}`;
-    document.documentElement.append(style);
-  }
-  if (rule.shadow) startShadowScan(rule.shadow);
-  if (rule.urlFilter) startUrlFilter(rule.urlFilter);
+  const settings = { loaded: false, enabled: true, useStoreFilters: true };
+  const style = createStyle(rule);
+  const scanner = rule.shadow && createShadowScanner(rule.shadow);
+  const redirect = rule.urlFilter && createRedirect(rule.urlFilter, () => settings.loaded && settings.enabled && settings.useStoreFilters);
+
+  const apply = (): void => {
+    if (settings.enabled) document.documentElement.append(...(style ? [style] : []));
+    else style?.remove();
+    scanner?.setActive(settings.enabled);
+    redirect?.();
+  };
+
+  apply();
+  void chrome.storage.local.get([ENABLED_KEY, FILTERS_KEY]).then((stored) => {
+    settings.loaded = true;
+    settings.enabled = stored[ENABLED_KEY] !== false;
+    settings.useStoreFilters = stored[FILTERS_KEY] !== false;
+    apply();
+  });
+  chrome.storage.onChanged.addListener((changes) => {
+    const enabled = changes[ENABLED_KEY];
+    const filters = changes[FILTERS_KEY];
+    if (enabled) settings.enabled = enabled.newValue !== false;
+    if (filters) settings.useStoreFilters = filters.newValue !== false;
+    apply();
+  });
+  chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse: (response: CountResponse) => void) => {
+    if (isCountRequest(message)) sendResponse(countListings(rule, settings));
+  });
+  // shortcut: polling, replace with webNavigation if 500 ms lag is not acceptable
+  setInterval(() => redirect?.(), 500);
 }
 
-function startUrlFilter(filter: NonNullable<Rule['urlFilter']>): void {
-  let enabled = false;
-  const redirect = (): void => {
-    if (!enabled) return;
+function countListings(rule: Rule, settings: Settings): CountResponse {
+  const hiddenSelector = rule.hide ?? (rule.shadow && '[data-never-market]');
+  const cardSelector = rule.card ?? rule.shadow?.card;
+  return {
+    store: rule.name,
+    hidden: settings.enabled && hiddenSelector ? document.querySelectorAll(hiddenSelector).length : 0,
+    total: cardSelector ? document.querySelectorAll(cardSelector).length : null,
+    filtered: Boolean(
+      rule.urlFilter && settings.enabled && settings.useStoreFilters && hasFilterParam(rule.urlFilter, location.href),
+    ),
+  };
+}
+
+function createStyle(rule: Rule): HTMLStyleElement | undefined {
+  const hidden = [rule.hide, rule.shadow && '[data-never-market]'].filter(Boolean).join(',');
+  if (!hidden) return undefined;
+  const style = document.createElement('style');
+  style.textContent = `${hidden}{display:none!important}`;
+  return style;
+}
+
+function createRedirect(filter: UrlFilter, allowed: () => boolean): () => void {
+  return () => {
+    if (!allowed()) return;
     const target = filteredUrl(filter, location.href);
     if (!target) return;
     const last = sessionStorage.getItem(REDIRECT_KEY);
-    if (last && last.startsWith(`${target}|`) && Date.now() - Number(last.slice(target.length + 1)) < 5000) return;
+    if (last?.startsWith(`${target}|`) && Date.now() - Number(last.slice(target.length + 1)) < 5000) return;
     sessionStorage.setItem(REDIRECT_KEY, `${target}|${Date.now()}`);
     location.replace(target);
   };
-
-  void chrome.storage.local.get(TOGGLE_KEY).then((stored) => {
-    enabled = stored[TOGGLE_KEY] !== false;
-    redirect();
-  });
-  chrome.storage.onChanged.addListener((changes) => {
-    const change = changes[TOGGLE_KEY];
-    if (change) enabled = change.newValue !== false;
-    redirect();
-  });
-  // shortcut: polling, replace with webNavigation if 500 ms lag is not acceptable
-  setInterval(redirect, 500);
 }
 
-function startShadowScan({ card, host, marketplace }: ShadowRule): void {
-  const observed = new WeakSet<ShadowRoot>();
+function createShadowScanner({ card, host, marketplace }: ShadowRule): { setActive(active: boolean): void } {
+  let observed = new WeakSet<ShadowRoot>();
   let queued = false;
+  let timer: number | undefined;
   const observer = new MutationObserver(() => {
     if (queued) return;
     queued = true;
@@ -63,7 +99,19 @@ function startShadowScan({ card, host, marketplace }: ShadowRule): void {
     }
   }
 
-  observer.observe(document, { childList: true, subtree: true });
-  setInterval(scan, 500);
-  scan();
+  return {
+    setActive(active) {
+      observer.disconnect();
+      clearInterval(timer);
+      timer = undefined;
+      observed = new WeakSet();
+      if (active) {
+        observer.observe(document, { childList: true, subtree: true });
+        timer = setInterval(scan, 500);
+        scan();
+      } else {
+        for (const cell of document.querySelectorAll(card)) cell.removeAttribute('data-never-market');
+      }
+    },
+  };
 }

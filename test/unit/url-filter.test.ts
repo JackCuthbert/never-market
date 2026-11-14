@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { filteredUrl } from '../../src/url-filter.ts';
+import { filteredUrl, hasFilterParam } from '../../src/url-filter.ts';
 
 const bunnings = { pathPrefix: '/search/products', param: 'productranges', value: '!Marketplace' };
 const base = 'https://www.bunnings.com.au';
@@ -47,4 +47,10 @@ test('encodes with %20', () => {
 test('detects a param written with +', () => {
   const jb = { pathPrefix: '/search', param: 'Sold by', value: 'JB Hi-Fi' };
   assert.strictEqual(filteredUrl(jb, 'https://www.jbhifi.com.au/search?Sold+by=Other'), null);
+});
+
+test('hasFilterParam is true only on a matching path that carries the param', () => {
+  assert.strictEqual(hasFilterParam(bunnings, `${base}/search/products?productranges=Other`), true);
+  assert.strictEqual(hasFilterParam(bunnings, `${base}/search/products?q=a`), false);
+  assert.strictEqual(hasFilterParam(bunnings, `${base}/p/1?productranges=!Marketplace`), false);
 });
