@@ -20,7 +20,7 @@ test('bunnings category: nodes are not removed', async ({ context }) => {
 });
 
 test('bunnings category: remaining slides leave no gap', async ({ context }) => {
-  const page = await open(context);
+  const page = await open(context, `${URL}?productranges=!Marketplace`);
   await expect(page.locator('.embla-slide:visible')).toHaveCount(2);
   expect(await layoutProblems(page, '#track')).toEqual([]);
 });

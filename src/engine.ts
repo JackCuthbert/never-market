@@ -10,6 +10,7 @@ type Settings = { enabled: boolean; useStoreFilters: boolean };
 
 export function start(rule: Rule): void {
   const settings = { loaded: false, enabled: true, useStoreFilters: true };
+  const changed = new Set<string>();
   const style = createStyle(rule);
   const scanner = rule.shadow
     ? createShadowScanner(rule.shadow)
@@ -34,8 +35,8 @@ export function start(rule: Rule): void {
   apply();
   void chrome.storage.local.get([ENABLED_KEY, FILTERS_KEY]).then((stored) => {
     settings.loaded = true;
-    settings.enabled = stored[ENABLED_KEY] !== false;
-    settings.useStoreFilters = stored[FILTERS_KEY] !== false;
+    if (!changed.has(ENABLED_KEY)) settings.enabled = stored[ENABLED_KEY] !== false;
+    if (!changed.has(FILTERS_KEY)) settings.useStoreFilters = stored[FILTERS_KEY] !== false;
     apply();
     report();
   });
@@ -43,6 +44,7 @@ export function start(rule: Rule): void {
     sessionStorage.removeItem(REDIRECT_KEY);
     const enabled = changes[ENABLED_KEY];
     const filters = changes[FILTERS_KEY];
+    for (const key of Object.keys(changes)) changed.add(key);
     if (enabled) settings.enabled = enabled.newValue !== false;
     if (filters) settings.useStoreFilters = filters.newValue !== false;
     apply();
