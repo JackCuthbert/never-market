@@ -100,6 +100,7 @@ function createRedirect(filter: UrlFilter, allowed: () => boolean): () => void {
 
 function createShadowScanner({ card, host, marketplace }: ShadowRule): { setActive(active: boolean): void } {
   let observed = new WeakSet<ShadowRoot>();
+  let running = false;
   let queued = false;
   let timer: number | undefined;
   const observer = new MutationObserver(() => {
@@ -112,6 +113,7 @@ function createShadowScanner({ card, host, marketplace }: ShadowRule): { setActi
   });
 
   function scan(): void {
+    if (!running) return;
     for (const cell of document.querySelectorAll(card)) {
       const root = cell.querySelector(host)?.shadowRoot;
       if (root && !observed.has(root)) {
@@ -124,6 +126,7 @@ function createShadowScanner({ card, host, marketplace }: ShadowRule): { setActi
 
   return {
     setActive(active) {
+      running = active;
       observer.disconnect();
       clearInterval(timer);
       timer = undefined;
@@ -140,6 +143,7 @@ function createShadowScanner({ card, host, marketplace }: ShadowRule): { setActi
 }
 
 function createKeepScanner(card: string, { badge, text }: KeepRule): { setActive(active: boolean): void } {
+  let running = false;
   let queued = false;
   const observer = new MutationObserver(() => {
     if (queued) return;
@@ -151,6 +155,7 @@ function createKeepScanner(card: string, { badge, text }: KeepRule): { setActive
   });
 
   function scan(): void {
+    if (!running) return;
     for (const cell of document.querySelectorAll(card)) {
       const kept = [...cell.querySelectorAll(badge)].some((el) => el.textContent?.trim() === text);
       cell.toggleAttribute(KEEP_ATTRIBUTE, kept);
@@ -159,6 +164,7 @@ function createKeepScanner(card: string, { badge, text }: KeepRule): { setActive
 
   return {
     setActive(active) {
+      running = active;
       observer.disconnect();
       if (active) {
         observer.observe(document, { childList: true, subtree: true, characterData: true });
