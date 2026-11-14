@@ -1,5 +1,5 @@
 import type { BrowserContext } from '@playwright/test';
-import { expect, openPopup, openStorePage, setToggle, test } from './harness.ts';
+import { expect, openPopup, openStorePage, setEnabled, setToggle, test } from './harness.ts';
 
 const ORIGIN = 'https://www.bunnings.com.au';
 const SEARCH = `${ORIGIN}/search/products?page=1&q=cable+management&sort=BoostOrder`;
@@ -65,4 +65,64 @@ test('popup checkbox is checked by default and persists', async ({ context }) =>
   await setToggle(context, false);
   await popup.reload();
   await expect(popup.locator('#use-store-filters')).not.toBeChecked();
+});
+
+const FILTERED = `${SEARCH}&productranges=!Marketplace`;
+const documentRequests = (context: BrowserContext, base: string): string[] => {
+  const urls: string[] = [];
+  context.on('request', (r) => {
+    if (r.resourceType() === 'document' && r.url().startsWith(base)) urls.push(r.url());
+  });
+  return urls;
+};
+
+test('turning store filters off removes the param, reloads once and keeps history', async ({ context }) => {
+  const page = await open(context, FILTERED);
+  const lengthBefore = await page.evaluate(() => history.length);
+  const requested = documentRequests(context, `${ORIGIN}/search/products`);
+  await setToggle(context, false);
+  await page.bringToFront();
+  await expect(page).toHaveURL(SEARCH);
+  await page.waitForTimeout(1500);
+  expect(page.url()).toBe(SEARCH);
+  expect(requested).toEqual([SEARCH]);
+  expect(await page.evaluate(() => history.length)).toBe(lengthBefore);
+  await expect(page.locator('[data-search-product-tile]:visible')).toHaveCount(2);
+});
+
+test('turning store filters back on adds the param again', async ({ context }) => {
+  const page = await open(context, FILTERED);
+  await setToggle(context, false);
+  await page.bringToFront();
+  await expect(page).toHaveURL(SEARCH);
+  await setToggle(context, true);
+  await page.bringToFront();
+  await expect(page).toHaveURL(FILTERED);
+});
+
+test('turning the master toggle off strips the param and shows every tile', async ({ context }) => {
+  const page = await open(context, FILTERED);
+  await setEnabled(context, false);
+  await page.bringToFront();
+  await expect(page).toHaveURL(SEARCH);
+  await expect(page.locator('[data-search-product-tile]:visible')).toHaveCount(4);
+});
+
+test('a category page loses the param when store filters are turned off', async ({ context }) => {
+  const url = `${ORIGIN}/products/assisted-living?productranges=!Marketplace`;
+  const page = await openStorePage(context, { url, fixture: 'bunnings/category.html' });
+  await setToggle(context, false);
+  await page.bringToFront();
+  await expect(page).toHaveURL(`${ORIGIN}/products/assisted-living`);
+});
+
+test('bigw never navigates when store filters are turned off', async ({ context }) => {
+  const url = 'https://www.bigw.com.au/search?text=chair';
+  const page = await openStorePage(context, { url, fixture: 'bigw/search.html' });
+  const requested = documentRequests(context, 'https://www.bigw.com.au');
+  await setToggle(context, false);
+  await page.bringToFront();
+  await page.waitForTimeout(1500);
+  expect(page.url()).toBe(url);
+  expect(requested).toEqual([]);
 });

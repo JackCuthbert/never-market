@@ -1,6 +1,6 @@
 import { isCountRequest } from './types.ts';
 import type { CountResponse, Rule, ShadowRule, StatusMessage, UrlFilter } from './types.ts';
-import { filteredUrl, hasFilterParam } from './url-filter.ts';
+import { filteredUrl, hasFilterParam, unfilteredUrl } from './url-filter.ts';
 
 const ENABLED_KEY = 'enabled';
 const FILTERS_KEY = 'useStoreFilters';
@@ -41,6 +41,9 @@ export function start(rule: Rule): void {
     if (enabled) settings.enabled = enabled.newValue !== false;
     if (filters) settings.useStoreFilters = filters.newValue !== false;
     apply();
+    const turnedOff = (enabled && !settings.enabled) || (filters && !settings.useStoreFilters);
+    const cleaned = turnedOff && rule.urlFilter && unfilteredUrl(rule.urlFilter, location.href);
+    if (cleaned) location.replace(cleaned);
     if (enabled) report();
   });
   chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse: (response: CountResponse) => void) => {

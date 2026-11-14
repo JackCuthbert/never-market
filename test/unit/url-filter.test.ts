@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { filteredUrl, hasFilterParam } from '../../src/url-filter.ts';
+import { filteredUrl, hasFilterParam, unfilteredUrl } from '../../src/url-filter.ts';
 
 const bunnings = { pathPrefix: '/search/products', param: 'productranges', value: '!Marketplace' };
 const base = 'https://www.bunnings.com.au';
@@ -66,4 +66,56 @@ test('a pathPrefix list matches any prefix', () => {
   assert.strictEqual(filteredUrl(filter, `${base}/walking-frame_p0123456`), null);
   assert.strictEqual(filteredUrl(filter, `${base}/`), null);
   assert.strictEqual(hasFilterParam(filter, `${base}/products/x?productranges=!Marketplace`), true);
+});
+
+test('unfilteredUrl removes the param and keeps the other params in order', () => {
+  assert.strictEqual(
+    unfilteredUrl(bunnings, `${base}/search/products?page=1&productranges=!Marketplace&q=cable+management`),
+    `${base}/search/products?page=1&q=cable+management`
+  );
+});
+
+test('unfilteredUrl keeps a param with a different value', () => {
+  assert.strictEqual(unfilteredUrl(bunnings, `${base}/search/products?productranges=Other`), null);
+});
+
+test('unfilteredUrl keeps the hash', () => {
+  assert.strictEqual(
+    unfilteredUrl(bunnings, `${base}/search/products?q=a&productranges=!Marketplace#top`),
+    `${base}/search/products?q=a#top`
+  );
+});
+
+test('unfilteredUrl drops the ? when no params remain', () => {
+  assert.strictEqual(
+    unfilteredUrl(bunnings, `${base}/search/products?productranges=!Marketplace#top`),
+    `${base}/search/products#top`
+  );
+});
+
+test('unfilteredUrl matches encoded names and values and keeps other encodings', () => {
+  const jb = { pathPrefix: '/search', param: 'Sold by', value: 'JB Hi-Fi' };
+  const jbBase = 'https://www.jbhifi.com.au';
+  assert.strictEqual(
+    unfilteredUrl(jb, `${jbBase}/search?query=phone%20case&Sold%20by=JB%20Hi-Fi`),
+    `${jbBase}/search?query=phone%20case`
+  );
+  assert.strictEqual(
+    unfilteredUrl(jb, `${jbBase}/search?Sold+by=JB+Hi-Fi&query=a+b`),
+    `${jbBase}/search?query=a+b`
+  );
+});
+
+test('unfilteredUrl returns null when there is nothing to remove', () => {
+  assert.strictEqual(unfilteredUrl(bunnings, `${base}/search/products?q=a`), null);
+  assert.strictEqual(unfilteredUrl(bunnings, `${base}/search/products`), null);
+  assert.strictEqual(unfilteredUrl(bunnings, `${base}/p/1?productranges=!Marketplace`), null);
+});
+
+test('unfilteredUrl handles an array pathPrefix', () => {
+  const multi = { ...bunnings, pathPrefix: ['/search/products', '/products/'] };
+  assert.strictEqual(
+    unfilteredUrl(multi, `${base}/products/assisted-living?productranges=!Marketplace`),
+    `${base}/products/assisted-living`
+  );
 });

@@ -16,3 +16,17 @@ export function hasFilterParam(filter: UrlFilter, href: string): boolean {
   const url = new URL(href);
   return matchesPath(filter, url.pathname) && url.searchParams.has(filter.param);
 }
+
+const decode = (text: string): string => decodeURIComponent(text.replace(/\+/g, ' '));
+
+export function unfilteredUrl(filter: UrlFilter, href: string): string | null {
+  const url = new URL(href);
+  if (!matchesPath(filter, url.pathname)) return null;
+  const pairs = url.search.slice(1).split('&').filter(Boolean);
+  const kept = pairs.filter((pair) => {
+    const [name = '', value = ''] = pair.split(/=(.*)/s);
+    return !(decode(name) === filter.param && decode(value) === filter.value);
+  });
+  if (kept.length === pairs.length) return null;
+  return `${url.origin}${url.pathname}${kept.length ? `?${kept.join('&')}` : ''}${url.hash}`;
+}

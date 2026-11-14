@@ -92,6 +92,12 @@ My calls (not yet agreed):
   `data-never-market`, stops scanning and blocks any URL change, whatever
   `useStoreFilters` says; turning it on again applies live. This lets the user
   compare a page with and without hiding.
+- Turning `useStoreFilters` or `enabled` off on a page whose rule has a
+  `urlFilter` removes the extension's param (`unfilteredUrl`) and reloads the
+  cleaned URL with `location.replace`, so history is not polluted. Only a param
+  whose decoded value equals the rule's value is removed; other params, their
+  encoding and the hash are kept. Turning `enabled` off also strips it so the
+  page is the raw store page. Turning either back on re-adds the param.
 
 ## Rule format
 
