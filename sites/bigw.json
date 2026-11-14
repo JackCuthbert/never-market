@@ -3,6 +3,6 @@
   "hosts": [
     "www.bigw.com.au"
   ],
-  "card": "li:has(article[data-testid=\"product-tile\"])",
-  "hide": "li:has(article[data-testid=\"product-tile\"] img[alt=\"Marketplace Logo\"])"
+  "card": "li:has(article[data-testid=\"product-tile\"]), .keen-slider__slide:has(article[data-testid=\"product-tile\"])",
+  "hide": "li:has(article[data-testid=\"product-tile\"] img[alt=\"Marketplace Logo\"]), .keen-slider__slide:has(article[data-testid=\"product-tile\"] img[alt=\"Marketplace Logo\"])"
 }

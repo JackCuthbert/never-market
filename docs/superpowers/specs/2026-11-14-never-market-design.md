@@ -172,11 +172,21 @@ One file per store in `sites/<store>.json`:
   (unconfirmed). Class names have generated suffixes, so the rule uses none.
 - Marketplace cards contain `<div class="MarketplacePill_container__j__fT">`
   with `<img alt="Marketplace Logo">`. Retailer cards have neither.
+- Product pages show tiles in a keen-slider carousel ("Similar Products",
+  "Recently Viewed"). The layout cell is `<div class="keen-slider__slide
+  ...">` whose only child is the same `<article data-testid="product-tile">`,
+  with the same Marketplace Logo signal.
 - `hide`: `li:has(article[data-testid="product-tile"] img[alt="Marketplace
-  Logo"])`.
-- Not used: the `ONLINE ONLY`, `DELIVERY ONLY`, `NEW` and
+  Logo"]), .keen-slider__slide:has(article[data-testid="product-tile"]
+  img[alt="Marketplace Logo"])`.
+- `card`: `li:has(article[data-testid="product-tile"]),
+  .keen-slider__slide:has(article[data-testid="product-tile"])`.
+- Not used: the `ONLINE ONLY`, `DELIVERY ONLY`, `NEW`, `Sponsored` and
   `NOT AVAILABLE IN STORE` labels. Retailer products can carry the first
-  three.
+  three and any product can be sponsored.
+- Known limit: keen-slider positions slides with JS-set inline transforms and
+  counted its slides before they were hidden, so hiding a slide may leave the
+  drag range or dots out of sync.
 
 ## Woolworths rule (partly known)
 
