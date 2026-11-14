@@ -1,0 +1,29 @@
+<!doctype html>
+<html><head><style>
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.product-grid-v2--tile { min-height: 40px; }
+</style></head><body>
+<div class="grid" id="grid"></div>
+<script>
+const MARKET = '<div class="message-wrapper market-product-message-wrapper"><div id="vendor-information-tile">Sold by <span class="seller-name">The Gamesmen</span></div></div>';
+const RETAIL = '<div class="message-wrapper"></div>';
+function fill(tile, market) {
+  const root = tile.shadowRoot ?? tile.attachShadow({ mode: 'open' });
+  root.innerHTML = market ? MARKET : RETAIL;
+}
+window.addTile = ({ market, delayMs = 0, id }) => {
+  const cell = document.createElement('div');
+  cell.className = 'product-grid-v2--tile';
+  if (id) cell.id = id;
+  const tile = document.createElement('wc-product-tile');
+  tile.textContent = 'tile';
+  cell.append(tile);
+  document.getElementById('grid').append(cell);
+  setTimeout(() => fill(tile, market), delayMs);
+  return cell;
+};
+window.retarget = (id, market) => fill(document.getElementById(id).querySelector("wc-product-tile"), market);
+addTile({ market: true, id: 'm1' });
+addTile({ market: false, id: 'r1' });
+</script>
+</body></html>
