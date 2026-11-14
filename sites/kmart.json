@@ -1,0 +1,12 @@
+{
+  "name": "Kmart",
+  "hosts": [
+    "www.kmart.com.au"
+  ],
+  "card": "li[data-testid$='-grid-item']",
+  "keep": {
+    "badge": "[aria-label='seller badge'] span",
+    "text": "Kmart"
+  },
+  "note": "Kmart's own marketplace filter still shows Target and Officeworks items as if Kmart sold them. Never Market hides every listing not sold by Kmart instead."
+}

@@ -48,7 +48,7 @@
 - `test/unit/`, `test/e2e/`: tests. `README.md`: build, install, runbook.
 
 Rule shape (used by every task), exported from `src/types.ts`:
-`Rule = { name: string, card?: string, hosts: string[], urlFilter?: { pathPrefix: string, param: string, value: string }, hide?: string, shadow?: { card: string, host: string, marketplace: string } }`
+`Rule = { name: string, card?: string, hosts: string[], urlFilter?: { pathPrefix: string, param: string, value: string }, hide?: string, shadow?: { card: string, host: string, marketplace: string }, keep?: { badge: string, text: string }, note?: string }`
 
 ---
 

@@ -1,0 +1,46 @@
+<!doctype html>
+<html><head><style>
+#grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0; padding: 0; list-style: none; }
+#grid > li { min-height: 60px; }
+</style></head><body>
+<ul id="grid">
+  <li data-testid="slp-grid-item" id="kmart"><a href="/product/kmart/">Product kmart</a>
+    <div aria-label="seller badge" role="status"><span>Kmart</span></div>
+    <div aria-label="seller badge" aria-hidden="true"><span>Kmart</span></div>
+  </li>
+  <li data-testid="slp-grid-item" id="both"><a href="/product/both/">Product both</a>
+    <div aria-label="seller badge" role="status"><div><span>Kmart</span></div><div><span>Target</span></div></div>
+    <div aria-label="seller badge" aria-hidden="true"><div><span>Kmart</span></div><div><span>Target</span></div></div>
+  </li>
+  <li data-testid="slp-grid-item" id="online"><a href="/product/online/">Product online</a>
+    <div aria-label="seller badge" role="status"><span>Kmart</span><span class="tag">Online only</span></div>
+    <div aria-label="seller badge" aria-hidden="true"><span>Kmart</span><span class="tag">Online only</span></div>
+  </li>
+  <li data-testid="slp-grid-item" id="target"><a href="/product/target/">Product target</a>
+    <div aria-label="seller badge" role="status"><span>Target</span></div>
+    <div aria-label="seller badge" aria-hidden="true"><span>Target</span></div>
+  </li>
+  <li data-testid="slp-grid-item" id="officeworks"><a href="/product/officeworks/">Product officeworks</a>
+    <div aria-label="seller badge" role="status"><span>Officeworks</span></div>
+    <div aria-label="seller badge" aria-hidden="true"><span>Officeworks</span></div>
+    <div aria-label="+3 sellers"><span>+3 sellers</span></div>
+  </li>
+  <li data-testid="slp-grid-item" id="market"><a href="/product/market/">Product market</a>
+    <div aria-label="seller badge" role="status"><span>Marketplace</span></div>
+    <div aria-label="seller badge" aria-hidden="true"><span>Marketplace</span></div>
+  </li>
+  <li data-testid="slp-grid-item" id="kmartish"><a href="/product/kmartish/">Product kmartish</a>
+    <div aria-label="seller badge" role="status"><span>Kmart Tyre &amp; Auto</span></div>
+    <div aria-label="seller badge" aria-hidden="true"><span>Kmart Tyre &amp; Auto</span></div>
+  </li>
+</ul>
+<script>
+window.addCard = ({ id, seller }) => {
+  const li = document.createElement('li');
+  li.dataset.testid = 'slp-grid-item';
+  li.id = id;
+  li.innerHTML = '<div aria-label="seller badge" role="status"><span>' + seller + '</span></div>';
+  document.getElementById('grid').append(li);
+};
+</script>
+</body></html>

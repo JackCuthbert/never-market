@@ -14,6 +14,8 @@ const fill = query<HTMLElement>('#fill');
 const percent = query<HTMLElement>('#percent');
 const stats = query<HTMLElement>('#stats');
 const extra = query<HTMLElement>('#extra');
+const filtersRow = query<HTMLElement>('#filters-row');
+const note = query<HTMLElement>('#note');
 const unfilter = query<HTMLButtonElement>('#unfilter');
 const storeList = query<HTMLElement>('#store-list');
 const switches = {
@@ -44,6 +46,9 @@ async function readCount(): Promise<CountResponse | null> {
 
 function render(enabled: boolean, response: CountResponse | null): void {
   extra.hidden = true;
+  filtersRow.hidden = response?.filterable === false;
+  note.hidden = !response?.note;
+  note.textContent = response?.note ?? '';
   if (!response) {
     main.dataset['state'] = 'unsupported';
     store.textContent = '';

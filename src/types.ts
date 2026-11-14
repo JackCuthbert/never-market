@@ -2,6 +2,8 @@ export type UrlFilter = { pathPrefix: string | string[]; param: string; value: s
 
 export type ShadowRule = { card: string; host: string; marketplace: string };
 
+export type KeepRule = { badge: string; text: string };
+
 export type Rule = {
   name: string;
   hosts: string[];
@@ -9,11 +11,13 @@ export type Rule = {
   card?: string;
   hide?: string;
   shadow?: ShadowRule;
+  keep?: KeepRule;
+  note?: string;
 };
 
 export type CountRequest = { type: 'count' };
 
-export type CountResponse = { store: string; hidden: number; total: number | null; filtered: boolean };
+export type CountResponse = { store: string; hidden: number; total: number | null; filtered: boolean; filterable: boolean; note: string | null };
 
 export type StatusMessage = { type: 'status'; active: boolean };
 

@@ -12,7 +12,8 @@
         --border: #d9dee4;
         --text: #15191e;
         --muted: #54606d;
-        --accent: #0b6e4f;
+        --accent: #16a34a;
+        --accent-text: #15803d;
         --track: #8a95a1;
         --thumb: #ffffff;
         --focus: #1a5fd0;
@@ -25,7 +26,8 @@
           --border: #343b45;
           --text: #f1f3f5;
           --muted: #a7b0bb;
-          --accent: #4fd9a0;
+          --accent: #4ade80;
+          --accent-text: #4ade80;
           --track: #6c7785;
           --thumb: #16191e;
           --focus: #7fb0ff;
@@ -57,8 +59,10 @@
       #fill { display: block; transition: width 0.2s; height: 100%; width: 0; border-radius: 999px; background: var(--accent); }
       #percent { min-width: 3ch; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
       main:not([data-state='on']) .meter { display: none; }
+      #note { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+      #note[hidden] { display: none; }
       #extra { margin: 8px 0 0; font-weight: 600; }
-      #unfilter { margin: 10px 0 0; padding: 5px 12px; font: inherit; font-weight: 600; color: var(--accent); background: none; border: 1px solid var(--accent); border-radius: 8px; cursor: pointer; }
+      #unfilter { margin: 10px 0 0; padding: 5px 12px; font: inherit; font-weight: 600; color: var(--accent-text); background: none; border: 1px solid var(--accent); border-radius: 8px; cursor: pointer; }
       #unfilter:focus-visible, #store-list a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
       main:not([data-state='filtered']) #unfilter { display: none; }
       #supported { margin: 0 0 14px; }
@@ -66,15 +70,16 @@
       #store-list { margin: 0; padding: 0; list-style: none; }
       #store-list li + li { border-top: 1px solid var(--border); }
       #store-list a { display: block; padding: 8px 0; color: var(--text); text-decoration: none; }
-      #store-list a:hover { color: var(--accent); text-decoration: underline; }
+      #store-list a:hover { color: var(--accent-text); text-decoration: underline; }
       main:not([data-state='unsupported']) #supported { display: none; }
       main[data-state='unsupported'] .settings { display: none; }
       main[data-state='unsupported'] #supported { margin-bottom: 0; }
       .settings { border-top: 1px solid var(--border); }
-      .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
-      .row:last-child { border-bottom: 0; padding-bottom: 0; }
+      .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; cursor: pointer; }
+      .row + .row:not([hidden]) { border-top: 1px solid var(--border); }
       .title { display: block; font-weight: 600; }
       .desc { display: block; color: var(--muted); font-size: 12px; }
+      #filters-row[hidden] { display: none; }
       main[data-state='off'] #filters-row { opacity: 0.7; }
       input[role='switch'] {
         appearance: none;
@@ -120,6 +125,7 @@
           <span id="percent"></span>
         </div>
         <p id="extra" hidden></p>
+        <p id="note" hidden></p>
         <button type="button" id="unfilter">Turn off store filters</button>
       </section>
       <section id="supported" aria-labelledby="supported-intro">

@@ -1,6 +1,6 @@
 # never-market
 
-Firefox and Chrome extension that hides marketplace listings on Bunnings, JB Hi-Fi, Woolworths and Big W.
+Firefox and Chrome extension that hides marketplace listings on Bunnings, JB Hi-Fi, Woolworths and Big W, and non-Kmart listings on Kmart.
 
 ## Build
 
@@ -49,11 +49,11 @@ Firefox is not automated. After loading the extension:
 - The "Use store filters" toggle works on and off. Turning it off (or turning hiding off) removes `productranges=!Marketplace` (or the store's param) from the URL and reloads the page; turning it on adds it back.
 - Marketplace cards are gone, and the popup shows how many are hidden on the page. Counts need "Use store filters" off (or Big W): with the store filter active the popup says "<store> is filtering for you" instead. The popup shows "Hiding is off" with the master toggle off, and elsewhere only the supported stores, each a link to that store's home page.
 - The layout has no gaps. On Big W, check a product page's "Similar Products" and "Recently Viewed" sliders: marketplace tiles are gone, and drag range and dots still work (keen-slider may be out of sync after hiding). On Bunnings, `/products/...` category pages are redirected to add `productranges=!Marketplace`. Unverified: whether the bare landing page `/products/assisted-living` honours that param; if it ignores it, the carousel hide rule is what removes the cards there. Also check a category page such as `/products/assisted-living`: the carousel arrows and scroll position still work, and a carousel of only marketplace items leaves an empty section with its heading.
-- The URL filter is applied on each store (with the toggle on).
+- The URL filter is applied on each store that has one (with the toggle on). Kmart has none: only Kmart-sold cards stay on /search/ and /category/ pages, and the popup has no "Use store filters" toggle there.
 
 ## Rule format
 
-`sites/<store>.json`: `name` (shown in the popup), `hosts`, optional `urlFilter` (`pathPrefix`, `param`, `value`), `card` (the listing's layout cell, used for the popup's total), and either `hide` (CSS selector for marketplace cells) or `shadow` (`card`, `host`, `marketplace`) for shadow-DOM stores.
+`sites/<store>.json`: `name` (shown in the popup), `hosts`, optional `urlFilter` (`pathPrefix`, `param`, `value`), `card` (the listing's layout cell, used for the popup's total), and one of `hide` (CSS selector for marketplace cells), `shadow` (`card`, `host`, `marketplace`) for shadow-DOM stores, or `keep` (`badge`, `text`) to hide every card whose badge text is not exactly `text`. Optional `note` is shown in the popup on that store's pages.
 
 ## Add a store
 

@@ -27,6 +27,7 @@ const hosts = {
   jbhifi: 'www.jbhifi.com.au',
   woolworths: 'www.woolworths.com.au',
   bigw: 'www.bigw.com.au',
+  kmart: 'www.kmart.com.au',
 };
 
 test('manifest basics', () => {

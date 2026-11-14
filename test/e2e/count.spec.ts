@@ -10,6 +10,8 @@ test('css store: popup shows the number of marketplace tiles', async ({ context 
   await expect(popup.locator('#store')).toHaveText('Bunnings');
   await expect(popup.locator('#stats')).toHaveText('2 of 4 listings hidden');
   await expect(popup.locator('#percent')).toHaveText('50%');
+  await expect(popup.locator('#use-store-filters')).toBeVisible();
+  await expect(popup.locator('#note')).toBeHidden();
 });
 
 test('shadow store: popup counts a late-rendered marketplace tile', async ({ context }) => {
@@ -67,13 +69,14 @@ test('a store without a urlFilter is never filtered', async ({ context }) => {
   const page = await openStorePage(context, { url: 'https://www.bigw.com.au/search?text=chair', fixture: 'bigw/search.html' });
   const popup = await openPopupOver(context, page);
   await expect(popup.locator('#stats')).toHaveText('2 of 4 listings hidden');
+  await expect(popup.locator('#use-store-filters')).toBeHidden();
 });
 
 test('a page without the content script shows the unsupported message', async ({ context }) => {
   const popup = await openPopup(context);
   await expect(popup.locator('main')).toHaveAttribute('data-state', 'unsupported');
   await expect(popup.locator('#status')).toBeHidden();
-  await expect(popup.locator('#store-list a')).toHaveText(['Big W', 'Bunnings', 'JB Hi-Fi', 'Woolworths']);
+  await expect(popup.locator('#store-list a')).toHaveText(['Big W', 'Bunnings', 'JB Hi-Fi', 'Kmart', 'Woolworths']);
   await expect(popup.locator('#store-list a').first()).toHaveAttribute('href', 'https://www.bigw.com.au/');
   await expect(popup.locator('#store-list a').first()).toHaveAttribute('target', '_blank');
 });

@@ -1,5 +1,5 @@
 import { isCountRequest } from './types.ts';
-import type { CountResponse, Rule, ShadowRule, StatusMessage, UrlFilter } from './types.ts';
+import type { CountResponse, KeepRule, Rule, ShadowRule, StatusMessage, UrlFilter } from './types.ts';
 import { filteredUrl, hasFilterParam, unfilteredUrl } from './url-filter.ts';
 
 const ENABLED_KEY = 'enabled';
@@ -11,7 +11,11 @@ type Settings = { enabled: boolean; useStoreFilters: boolean };
 export function start(rule: Rule): void {
   const settings = { loaded: false, enabled: true, useStoreFilters: true };
   const style = createStyle(rule);
-  const scanner = rule.shadow && createShadowScanner(rule.shadow);
+  const scanner = rule.shadow
+    ? createShadowScanner(rule.shadow)
+    : rule.keep && rule.card
+      ? createKeepScanner(rule.card, rule.keep)
+      : undefined;
   const redirect = rule.urlFilter && createRedirect(rule.urlFilter, () => settings.loaded && settings.enabled && settings.useStoreFilters);
 
   const report = (): void => {
@@ -54,11 +58,13 @@ export function start(rule: Rule): void {
 }
 
 function countListings(rule: Rule, settings: Settings): CountResponse {
-  const hiddenSelector = rule.hide ?? (rule.shadow && '[data-never-market]');
+  const hiddenSelector = rule.hide ?? (rule.shadow && '[data-never-market]') ?? (rule.keep && rule.card && notKept(rule.card));
   const cardSelector = rule.card ?? rule.shadow?.card;
   return {
     store: rule.name,
     hidden: settings.enabled && hiddenSelector ? document.querySelectorAll(hiddenSelector).length : 0,
+    filterable: Boolean(rule.urlFilter),
+    note: rule.note ?? null,
     total: cardSelector ? document.querySelectorAll(cardSelector).length : null,
     filtered: Boolean(
       rule.urlFilter && settings.enabled && settings.useStoreFilters && hasFilterParam(rule.urlFilter, location.href),
@@ -66,8 +72,13 @@ function countListings(rule: Rule, settings: Settings): CountResponse {
   };
 }
 
+const KEEP_ATTRIBUTE = 'data-never-market-keep';
+const notKept = (card: string): string => `:is(${card}):not([${KEEP_ATTRIBUTE}])`;
+
 function createStyle(rule: Rule): HTMLStyleElement | undefined {
-  const hidden = [rule.hide, rule.shadow && '[data-never-market]'].filter(Boolean).join(',');
+  const hidden = [rule.hide, rule.shadow && '[data-never-market]', rule.keep && rule.card && notKept(rule.card)]
+    .filter(Boolean)
+    .join(',');
   if (!hidden) return undefined;
   const style = document.createElement('style');
   style.textContent = `${hidden}{display:none!important}`;
@@ -122,6 +133,37 @@ function createShadowScanner({ card, host, marketplace }: ShadowRule): { setActi
         scan();
       } else {
         for (const cell of document.querySelectorAll(card)) cell.removeAttribute('data-never-market');
+      }
+    },
+  };
+}
+
+function createKeepScanner(card: string, { badge, text }: KeepRule): { setActive(active: boolean): void } {
+  let queued = false;
+  const observer = new MutationObserver(() => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => {
+      queued = false;
+      scan();
+    });
+  });
+
+  function scan(): void {
+    for (const cell of document.querySelectorAll(card)) {
+      const kept = [...cell.querySelectorAll(badge)].some((el) => el.textContent?.trim() === text);
+      cell.toggleAttribute(KEEP_ATTRIBUTE, kept);
+    }
+  }
+
+  return {
+    setActive(active) {
+      observer.disconnect();
+      if (active) {
+        observer.observe(document, { childList: true, subtree: true, characterData: true });
+        scan();
+      } else {
+        for (const cell of document.querySelectorAll(card)) cell.removeAttribute(KEEP_ATTRIBUTE);
       }
     },
   };

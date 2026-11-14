@@ -16,6 +16,7 @@ const stores: { name: string; url: string }[] = [];
 for (const file of readdirSync(join(root, 'sites')).filter((f) => f.endsWith('.json'))) {
   const store = basename(file, '.json');
   const rule: Rule = JSON.parse(readFileSync(join(root, 'sites', file), 'utf8'));
+  if (rule.keep && !rule.card) throw new Error(`${file}: keep needs card`);
   await build({
     stdin: {
       contents: `import { start } from ${JSON.stringify(join(root, 'src/engine.ts'))};\nstart(${JSON.stringify(rule)});\n`,

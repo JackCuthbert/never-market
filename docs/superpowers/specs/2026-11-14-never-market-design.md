@@ -132,6 +132,17 @@ One file per store in `sites/<store>.json`:
   rendered it cannot be classified, so a marketplace card can show briefly.
   That is a known limit of this mode; the URL filter avoids it when on.
 
+- `note` (optional): a short string the popup shows as a muted line on that
+  store's pages (the content script returns it in the count response).
+- `keep` (optional, instead of `hide` or `shadow`): for a store where the
+  seller, not the marketplace, is the signal. `{ badge, text }` and a
+  top-level `card`. A card is kept when some element matching `badge` has
+  trimmed text exactly equal to `text`; every other card is hidden. The engine
+  marks kept cards with `data-never-market-keep`, and the injected stylesheet
+  hides every `card` without it, so a card is hidden from the start and shown
+  when the scan finds the badge (no flash of unwanted cards). The scan is a
+  `MutationObserver`. Limit: a card whose badge never renders stays hidden.
+
 ## Bunnings rule (from supplied markup)
 
 - `urlFilter`: path prefixes `/search/products` and `/products/` (category
@@ -165,6 +176,21 @@ One file per store in `sites/<store>.json`:
   `.ProductCard:has([data-testid="marketplace-seller_callout_product-card"])`.
   Marketplace cards have a "JB Hi-Fi Marketplace: Sold and sent by …"
   callout; retailer cards have none.
+
+## Kmart rule (from supplied markup)
+
+- Keep-only: hide every card not sold by Kmart. No `urlFilter`: the `f.Shops`
+  param does not narrow results (they still show Target, Officeworks and
+  other sellers), so Kmart is never in the "filtered" state and counts always
+  show. The popup hides "Use store filters" for any store without a
+  `urlFilter` (the content script reports `filterable`).
+- Cards: `li[data-testid$='-grid-item']` (`slp-` on /search/, `plp-` on
+  /category/).
+- `keep`: `{ badge: "[aria-label='seller badge'] span", text: "Kmart" }`.
+  Kmart-only and Kmart + Target badges are kept; Target only, Officeworks
+  ("+3 sellers"), Marketplace and any text that is not exactly "Kmart" are
+  hidden. "Online only" is not a signal. The `aria-hidden` duplicate badge is
+  harmless.
 
 ## Big W rule (from supplied markup)
 
