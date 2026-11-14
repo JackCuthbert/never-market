@@ -47,7 +47,7 @@ Firefox is not automated. After loading the extension:
 
 - The "Hide marketplace listings" toggle shows every listing when off and hides marketplace listings again when on, without a reload; with it off the URL is never changed.
 - The "Use store filters" toggle works on and off.
-- Marketplace cards are gone, and the popup shows how many are hidden on the page. Counts need "Use store filters" off (or Big W): with the store filter active the popup says "Filtered by <store>" instead. The popup shows "Off" with the master toggle off and "Not a supported store page" elsewhere.
+- Marketplace cards are gone, and the popup shows how many are hidden on the page. Counts need "Use store filters" off (or Big W): with the store filter active the popup says "<store> is filtering for you" instead. The popup shows "Hiding is off" with the master toggle off, and elsewhere only the supported stores, each a link to that store's home page.
 - The layout has no gaps. On Big W, check a product page's "Similar Products" and "Recently Viewed" sliders: marketplace tiles are gone, and drag range and dots still work (keen-slider may be out of sync after hiding). On Bunnings, `/products/...` category pages are redirected to add `productranges=!Marketplace`. Unverified: whether the bare landing page `/products/assisted-living` honours that param; if it ignores it, the carousel hide rule is what removes the cards there. Also check a category page such as `/products/assisted-living`: the carousel arrows and scroll position still work, and a carousel of only marketplace items leaves an empty section with its heading.
 - The URL filter is applied on each store (with the toggle on).
 

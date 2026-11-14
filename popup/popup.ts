@@ -1,6 +1,6 @@
 import type { CountRequest, CountResponse } from '../src/types.ts';
 
-type StoreInfo = { name: string };
+type StoreInfo = { name: string; url: string };
 
 const query = <T extends Element>(selector: string): T => {
   const element = document.querySelector<T>(selector);
@@ -10,8 +10,8 @@ const query = <T extends Element>(selector: string): T => {
 
 const main = query<HTMLElement>('main');
 const store = query<HTMLElement>('#store');
-const count = query<HTMLOutputElement>('#count');
-const countLabel = query<HTMLElement>('#count-label');
+const fill = query<HTMLElement>('#fill');
+const percent = query<HTMLElement>('#percent');
 const stats = query<HTMLElement>('#stats');
 const extra = query<HTMLElement>('#extra');
 const unfilter = query<HTMLButtonElement>('#unfilter');
@@ -46,36 +46,28 @@ function render(enabled: boolean, response: CountResponse | null): void {
   extra.hidden = true;
   if (!response) {
     main.dataset['state'] = 'unsupported';
-    store.textContent = 'Not a supported store page';
-    count.textContent = '–';
-    countLabel.textContent = 'Open a store search page';
-    stats.textContent = '';
+    store.textContent = '';
     return;
   }
   const { hidden, total, filtered } = response;
   store.textContent = response.store;
   if (filtered) {
     main.dataset['state'] = 'filtered';
-    count.textContent = 'Filtered';
-    countLabel.textContent = 'by the store';
-    stats.textContent = `Filtered by ${response.store}. The store hides marketplace listings before the page loads, so there is nothing to count. Turn off Use store filters to see counts.`;
+    stats.textContent = `${response.store} is filtering for you, so there is no count.`;
     extra.hidden = hidden === 0;
     extra.textContent = `${hidden} more hidden by the extension`;
     return;
   }
   if (!enabled) {
     main.dataset['state'] = 'off';
-    count.textContent = 'Off';
-    countLabel.textContent = 'hiding is off';
-    stats.textContent = total === null ? '' : `${total} listings on this page`;
+    stats.textContent = total === null ? 'Hiding is off.' : `Hiding is off. ${total} listings shown.`;
     return;
   }
   main.dataset['state'] = 'on';
-  count.textContent = String(hidden);
-  countLabel.textContent = 'hidden on this page';
-  stats.textContent = total
-    ? `${hidden} of ${total} listings, ${Math.round((hidden / total) * 100)}%`
-    : 'No listings found yet';
+  const share = total ? Math.round((hidden / total) * 100) : 0;
+  stats.textContent = total ? `${hidden} of ${total} listings hidden` : 'No listings found yet';
+  percent.textContent = total ? `${share}%` : '';
+  fill.style.width = `${share}%`;
 }
 
 async function refresh(): Promise<void> {
@@ -92,7 +84,11 @@ void fetch('../stores.json')
   .then((response) => response.json() as Promise<StoreInfo[]>)
   .then((stores) => {
     storeList.replaceChildren(
-      ...stores.map(({ name }) => Object.assign(document.createElement('li'), { textContent: name })),
+      ...stores.map(({ name, url }) => {
+        const item = document.createElement('li');
+        item.append(Object.assign(document.createElement('a'), { textContent: name, href: url, target: '_blank', rel: 'noreferrer' }));
+        return item;
+      }),
     );
   });
 

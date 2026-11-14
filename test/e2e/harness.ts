@@ -58,18 +58,18 @@ export async function openPopupOver(context: BrowserContext, target: Page): Prom
   return popup;
 }
 
-async function setCheckbox(context: BrowserContext, id: string, key: string, value: boolean): Promise<void> {
+async function setSetting(context: BrowserContext, key: string, value: boolean): Promise<void> {
   const page = await openPopup(context);
-  await page.locator(id).setChecked(value);
+  await page.evaluate(`chrome.storage.local.set({ ${key}: ${value} })`);
   await expect.poll(() => page.evaluate(`chrome.storage.local.get("${key}").then((s) => s.${key})`)).toBe(value);
   await page.close();
 }
 
 export const setToggle = (context: BrowserContext, value: boolean): Promise<void> =>
-  setCheckbox(context, '#use-store-filters', 'useStoreFilters', value);
+  setSetting(context, 'useStoreFilters', value);
 
 export const setEnabled = (context: BrowserContext, value: boolean): Promise<void> =>
-  setCheckbox(context, '#enabled', 'enabled', value);
+  setSetting(context, 'enabled', value);
 
 export async function plainPage(
   browser: Browser,

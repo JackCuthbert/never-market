@@ -30,7 +30,7 @@ test('bunnings category: popup reports 3 hidden and not filtered when the filter
   const page = await open(context);
   const popup = await openPopupOver(context, page);
   await expect(popup.locator('main')).toHaveAttribute('data-state', 'on');
-  await expect(popup.locator('#count')).toHaveText('3');
+  await expect(popup.locator('#stats')).toContainText('3 of');
 });
 
 test('bunnings category: a URL without the param is redirected, params and hash kept', async ({ context }) => {

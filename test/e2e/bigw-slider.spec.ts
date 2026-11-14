@@ -27,8 +27,7 @@ test('bigw slider: popup reports 1 hidden and not filtered', async ({ context })
   const page = await open(context);
   const popup = await openPopupOver(context, page);
   await expect(popup.locator('main')).toHaveAttribute('data-state', 'on');
-  await expect(popup.locator('#count')).toHaveText('1');
-  await expect(popup.locator('#stats')).toHaveText('1 of 4 listings, 25%');
+  await expect(popup.locator('#stats')).toHaveText('1 of 4 listings hidden');
 });
 
 test('bigw slider: the URL is never changed', async ({ context }) => {

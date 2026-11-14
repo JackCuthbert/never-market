@@ -1,5 +1,5 @@
 import { mkdirSync } from 'node:fs';
-import { openPopup, openPopupOver, openStorePage, setEnabled, setToggle, test } from './harness.ts';
+import { expect, openPopup, openPopupOver, openStorePage, setEnabled, setToggle, test } from './harness.ts';
 
 const BUNNINGS = 'https://www.bunnings.com.au/search/products?page=1&q=cable+management&productranges=!Marketplace';
 
@@ -15,7 +15,9 @@ for (const scheme of ['light', 'dark'] as const) {
       await setToggle(context, false);
       const page = await openStorePage(context, { url: BUNNINGS, fixture: 'bunnings/search.html' });
       const popup = await openPopupOver(context, page);
-      await popup.locator('#stats').filter({ hasText: 'listings' }).waitFor();
+      await popup.locator('#stats').filter({ hasText: 'hidden' }).waitFor();
+      await expect(popup.locator('#enabled')).toBeVisible();
+      await expect(popup.locator('#use-store-filters')).toBeVisible();
       await shot(popup, 'on');
     });
 
@@ -23,6 +25,8 @@ for (const scheme of ['light', 'dark'] as const) {
       const page = await openStorePage(context, { url: BUNNINGS, fixture: 'bunnings/search.html' });
       const popup = await openPopupOver(context, page);
       await popup.locator('main[data-state="filtered"]').waitFor();
+      await expect(popup.locator('#enabled')).toBeVisible();
+      await expect(popup.locator('#use-store-filters')).toBeVisible();
       await shot(popup, 'filtered');
     });
 
@@ -30,13 +34,17 @@ for (const scheme of ['light', 'dark'] as const) {
       await setEnabled(context, false);
       const page = await openStorePage(context, { url: BUNNINGS, fixture: 'bunnings/search.html' });
       const popup = await openPopupOver(context, page);
-      await popup.locator('#count').filter({ hasText: 'Off' }).waitFor();
+      await popup.locator('main[data-state="off"]').waitFor();
+      await expect(popup.locator('#enabled')).toBeVisible();
+      await expect(popup.locator('#use-store-filters')).toBeVisible();
       await shot(popup, 'off');
     });
 
     test('unsupported page', async ({ context }) => {
       const popup = await openPopup(context);
-      await popup.locator('#store-list li').first().waitFor();
+      await popup.locator('#store-list a').first().waitFor();
+      await expect(popup.locator('#enabled')).toBeHidden();
+      await expect(popup.locator('#use-store-filters')).toBeHidden();
       await shot(popup, 'unsupported');
     });
   });
