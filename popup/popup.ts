@@ -16,7 +16,6 @@ const stats = query<HTMLElement>('#stats');
 const extra = query<HTMLElement>('#extra');
 const filtersRow = query<HTMLElement>('#filters-row');
 const note = query<HTMLElement>('#note');
-const unfilter = query<HTMLButtonElement>('#unfilter');
 const storeList = query<HTMLElement>('#store-list');
 const switches = {
   enabled: query<HTMLInputElement>('#enabled'),
@@ -28,10 +27,6 @@ for (const [key, checkbox] of Object.entries(switches)) {
     void chrome.storage.local.set({ [key]: checkbox.checked });
   });
 }
-
-unfilter.addEventListener('click', () => {
-  void chrome.storage.local.set({ useStoreFilters: false });
-});
 
 async function readCount(): Promise<CountResponse | null> {
   try {
@@ -58,7 +53,7 @@ function render(enabled: boolean, response: CountResponse | null): void {
   store.textContent = response.store;
   if (filtered) {
     main.dataset['state'] = 'filtered';
-    stats.textContent = `${response.store} is filtering for you, so there is no count.`;
+    stats.textContent = 'Store filter on. Listings are removed by the store, so there is nothing to count here.';
     extra.hidden = hidden === 0;
     extra.textContent = `${hidden} more hidden by the extension`;
     return;

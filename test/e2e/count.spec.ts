@@ -40,17 +40,16 @@ test('master toggle off shows Off and greys the stats', async ({ context }) => {
   await expect(popup.locator('#stats')).toHaveText('Hiding is off. 4 listings shown.');
 });
 
-test('filtered by the store: no count, a note, and a button that turns the filter off', async ({ context }) => {
+test('filtered by the store: no count and a note; the toggle turns it off', async ({ context }) => {
   const page = await openStorePage(context, { url: BUNNINGS, fixture: 'empty.html' });
   const popup = await openPopupOver(context, page);
   await expect(popup.locator('main')).toHaveAttribute('data-state', 'filtered');
-  await expect(popup.locator('#stats')).toContainText('Bunnings is filtering for you');
+  await expect(popup.locator('#stats')).toContainText('Store filter on');
   await expect(popup.locator('#extra')).toBeHidden();
   await expect(popup.locator('#enabled')).toBeVisible();
   await expect(popup.locator('#use-store-filters')).toBeVisible();
-  await popup.locator('#unfilter').click();
+  await popup.locator('#use-store-filters').uncheck();
   await expect(popup.locator('#use-store-filters')).not.toBeChecked();
-  await expect(popup.locator('#stats')).toHaveText('No listings found yet');
   await expect(popup.locator('#stats')).toHaveText('No listings found yet');
 });
 
@@ -65,6 +64,15 @@ test('filtered but some cards slipped through: shows how many the extension hid'
   const page = await openStorePage(context, { url, fixture: 'jbhifi/search.html' });
   const popup = await openPopupOver(context, page);
   await expect(popup.locator('#extra')).toHaveText('2 more hidden by the extension');
+});
+
+test('a page outside the store filter path shows a real count even with the param', async ({ context }) => {
+  const url = 'https://www.bunnings.com.au/p/123?productranges=!Marketplace';
+  const page = await openStorePage(context, { url, fixture: 'bunnings/search.html' });
+  const popup = await openPopupOver(context, page);
+  await expect(popup.locator('main')).toHaveAttribute('data-state', 'on');
+  await expect(popup.locator('#stats')).toHaveText('2 of 4 listings hidden');
+  await expect(page.locator('[data-search-product-tile]:visible')).toHaveCount(2);
 });
 
 test('a store without a urlFilter is never filtered', async ({ context }) => {
