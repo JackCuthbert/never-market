@@ -42,7 +42,7 @@ for (const scheme of ['light', 'dark'] as const) {
 
     test('unsupported page', async ({ context }) => {
       const popup = await openPopup(context);
-      await popup.locator('#store-list a').first().waitFor();
+      await popup.locator('#store-list').filter({ hasText: 'Kmart' }).waitFor();
       await expect(popup.locator('#enabled')).toBeHidden();
       await expect(popup.locator('#use-store-filters')).toBeHidden();
       await shot(popup, 'unsupported');

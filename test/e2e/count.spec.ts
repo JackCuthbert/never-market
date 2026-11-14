@@ -86,9 +86,13 @@ test('a page without the content script shows the unsupported message', async ({
   const popup = await openPopup(context);
   await expect(popup.locator('main')).toHaveAttribute('data-state', 'unsupported');
   await expect(popup.locator('#status')).toBeHidden();
-  await expect(popup.locator('#store-list a')).toHaveText(['Big W', 'Bunnings', 'JB Hi-Fi', 'Kmart', 'Woolworths']);
-  await expect(popup.locator('#store-list a').first()).toHaveAttribute('href', 'https://www.bigw.com.au/');
-  await expect(popup.locator('#store-list a').first()).toHaveAttribute('target', '_blank');
+  await expect(popup.locator('#supported p')).toHaveText([
+    'Never Market is off on this site.',
+    'It works on Big W, Bunnings, JB Hi-Fi, Kmart, Woolworths.',
+  ]);
+  await expect(popup.locator('#supported a')).toHaveCount(0);
+  await expect(popup.locator('#enabled')).toBeHidden();
+  await expect(popup.locator('#use-store-filters')).toBeHidden();
 });
 
 declare global {

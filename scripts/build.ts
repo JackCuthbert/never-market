@@ -11,7 +11,7 @@ mkdirSync(join(out, 'rules'), { recursive: true });
 
 const manifest: Record<string, unknown> = JSON.parse(readFileSync(join(root, 'manifest.base.json'), 'utf8'));
 const contentScripts = [];
-const stores: { name: string; url: string }[] = [];
+const stores: { name: string }[] = [];
 
 for (const file of readdirSync(join(root, 'sites')).filter((f) => f.endsWith('.json'))) {
   const store = basename(file, '.json');
@@ -27,7 +27,7 @@ for (const file of readdirSync(join(root, 'sites')).filter((f) => f.endsWith('.j
     format: 'iife',
     target: 'chrome105',
   });
-  stores.push({ name: rule.name, url: `https://${rule.hosts[0]}/` });
+  stores.push({ name: rule.name });
   contentScripts.push({
     matches: rule.hosts.map((host) => `https://${host}/*`),
     run_at: 'document_start',

@@ -1,6 +1,6 @@
 import type { CountRequest, CountResponse } from '../src/types.ts';
 
-type StoreInfo = { name: string; url: string };
+type StoreInfo = { name: string };
 
 const query = <T extends Element>(selector: string): T => {
   const element = document.querySelector<T>(selector);
@@ -83,13 +83,7 @@ async function refresh(): Promise<void> {
 void fetch('../stores.json')
   .then((response) => response.json() as Promise<StoreInfo[]>)
   .then((stores) => {
-    storeList.replaceChildren(
-      ...stores.map(({ name, url }) => {
-        const item = document.createElement('li');
-        item.append(Object.assign(document.createElement('a'), { textContent: name, href: url, target: '_blank', rel: 'noreferrer' }));
-        return item;
-      }),
-    );
+    storeList.textContent = stores.map(({ name }) => name).join(', ');
   });
 
 void refresh();
